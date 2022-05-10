@@ -27,4 +27,4 @@ INFLUX_TOKEN= "some_stuff"
  -  default influx bucket is `main`, org `home`. Change this with `ORG` and `BUCKET` variables in [config.py](https://github.com/mzakharo/birdnetapp/blob/main/config.py)
  - Telegram notification cooldown is controlled by `SEEN_TIME` variable in [config.py](https://github.com/mzakharo/birdnetapp/blob/main/config.py). If a bird has been seen within this time window, it will not trigger notificaitons
  - default recording save directory is specified in [config.py](https://github.com/mzakharo/birdnetapp/blob/main/config.py), `SAVEDIR` variable
- - User can expose this directory over samba
+ - User can expose `SEVEDIR` directory over samba
