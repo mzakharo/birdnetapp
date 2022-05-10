@@ -26,7 +26,7 @@ query_api = influx_client.query_api()
 
 
 # Make metadata
-mdata = {'lat': LAT, 
+MDATA = {'lat': LAT, 
          'lon': LON, 
          'num_results': 3,
          'overlap' : OVERLAP,
@@ -49,7 +49,7 @@ def send_telegram(filename, sci_result, result, conf, dry=False):
             tb.send_audio(TELEGRAM_CHATID, audio, performer=result, title=title, caption=caption)
 
 
-def upload_result(filename, res, confidence, dry, debug):
+def upload_result(filename, savedir, res, confidence, dry, debug):
     if res['msg'] != "success":
         return
     results = res['results']
@@ -60,7 +60,7 @@ def upload_result(filename, res, confidence, dry, debug):
     sci_result, result = result.split('_')
 
     if conf >= confidence:
-        dir_path = os.path.join(SAVEDIR, result)
+        dir_path = os.path.join(savedir, result)
 
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
@@ -176,7 +176,7 @@ def process(args, data, mdata):
     with tempfile.NamedTemporaryFile() as tmp:
         scipy.io.wavfile.write(tmp.name, RATE, data)
         res = sendRequest(HOST, PORT, tmp.name, json.dumps(mdata), args.debug)
-        upload_result(tmp.name, res, args.confidence, args.dry, args.debug)
+        upload_result(tmp.name, SAVEDIR, res, args.confidence, args.dry, args.debug)
 
 
 def main(args):
@@ -205,8 +205,8 @@ def main(args):
                 if len(buf) != buf.maxlen:
                     continue
                 data = b''.join(buf)
-                mdata['week'] = datetime.datetime.now().isocalendar()[1]
-                futures.append(exc.submit(process,args, data, mdata))
+                MDATA['week'] = datetime.datetime.now().isocalendar()[1]
+                futures.append(exc.submit(process,args, data, MDATA))
                 assert len(futures) < 10 , "Processing not keeping up with incoming data"
                 for f in futures:
                     if f.done():

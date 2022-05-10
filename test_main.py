@@ -1,4 +1,4 @@
-from birdnetapp import upload_result
+from main import upload_result
 
 FILENAME = 'example/cardinal.wav'
 SAVEDIR = '/tmp/birdnetapp_test'

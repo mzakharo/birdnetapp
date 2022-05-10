@@ -1,4 +1,4 @@
-from birdnetapp import send_telegram
+from main import send_telegram
 
 FILENAME = 'example/cardinal.wav'
 res = dict(msg='success', results=[["Cardinalis cardinalis_Northern Cardinal", 0.5]])
