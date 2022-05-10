@@ -1,0 +1,13 @@
+[Unit]
+Description=birdNet main service
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=30
+ExecStart=/usr/bin/python3 -u /home/pi/birdnetapp/main.py
+
+[Install]
+WantedBy=multi-user.target

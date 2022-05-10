@@ -1,0 +1,14 @@
+[Unit]
+Description=birdNet analyzer service
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=30
+ExecStart=/usr/bin/python3 -u /home/pi/BirdNET-Analyzer/server.py
+WorkingDirectory=/home/pi/BirdNET-Analyzer/
+
+[Install]
+WantedBy=multi-user.target

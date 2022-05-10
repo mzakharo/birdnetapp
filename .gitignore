@@ -1,0 +1,4 @@
+*.swp
+*.swo
+/secrets.py
+__pycache__
