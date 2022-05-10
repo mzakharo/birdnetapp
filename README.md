@@ -9,7 +9,7 @@ BirdNET App for raspberry Pi that saves bird sightings to Influx, alerts over Te
 
 ## Installation
  - clone BirdNet-Analyzer repository https://github.com/kahst/BirdNET-Analyzer.git  to `/home/pi`
- - clone this repository
+ - clone this repository to `/home/pi`
  - in root folder of this repository, create a secrets.py with the following contents: 
  ```
 TELEGRAM_TOKEN = 'blah'
@@ -22,3 +22,4 @@ INFLUX_TOKEN= "some_stuff"
  - run the server:  `cd /home/pi/BirdNET-Analyzer && python3 server.py`
  - Edit birdnetapp/main.py and adjust Microphone (RATE, CARD, CHANNELS), and birdnet (LON/LAT) settings
  - run the app: `cd /home/pi/birdnetapp && python3 main.py'
+ - Optional: install systemd services to run on startup `birdnet_main.service` and `birdnet_server.service`
