@@ -19,7 +19,7 @@ INFLUX_TOKEN= "some_stuff"
  ```
  - Install dependencies via `pip3 install -r requirements.txt`
  - run the server:  `cd /home/pi/BirdNET-Analyzer && python3 server.py`
- - Edit [config.py](https://github.com/mzakharo/birdnetapp/blob/main/config.py) and adjust Microphone (RATE, CARD, CHANNELS), and birdnet (LON/LAT) settings
+ - Edit [config.py](https://github.com/mzakharo/birdnetapp/blob/main/config.py) and adjust Microphone (`RATE`, `CARD`, `CHANNELS`), and birdnet (`LON`/`LAT`) settings
  - run the app: `cd /home/pi/birdnetapp && python3 main.py'
  - Optional: install systemd services to run on startup `birdnet_main.service` and `birdnet_server.service`
 
