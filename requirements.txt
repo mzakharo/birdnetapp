@@ -1,0 +1,10 @@
+pandas
+pyalsaaudio
+numpy
+scipy
+tflite-runtime
+librosa
+bottle
+influxdb-client
+pyTelegramBotAPI
+

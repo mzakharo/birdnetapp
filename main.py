@@ -17,34 +17,7 @@ import tempfile
 from concurrent.futures import ThreadPoolExecutor
 
 from secrets import TELEGRAM_TOKEN, TELEGRAM_CHATID, INFLUX_URL, INFLUX_TOKEN
-
-#Mic settings
-
-#PS-Eye
-RATE = 16000
-CHANNELS = 4
-CARD = 'CameraB409241'
-CHUNK = RATE * 1 # 1 second buffer
-
-#Files saved here
-SAVEDIR = '/home/pi/birdNet'
-
-#birdNET settings
-RECORD_SECONDS = 9
-CONF_TRHRESH = 0.5
-LAT=43.544811
-LON=-80.248108
-OVERLAP = 1 # 2.4
-PMODE = 'avg' # 'max'
-SF_THRESH = 0.05 #reduce false positives
-
-#birdNet server
-HOST='127.0.0.1'
-PORT = 8080
-
-#influx
-ORG = "home"
-BUCKET = "main"
+from config import *
 
 
 influx_client = InfluxDBClient(url=INFLUX_URL, token=INFLUX_TOKEN, org=ORG)
@@ -117,11 +90,11 @@ def upload_result(filename, res, confidence, dry, debug):
 
             #send notification if it is a new bird
             df = query_api.query_data_frame(
-            '''import "influxdata/influxdb/schema"
+            f'''import "influxdata/influxdb/schema"
              schema.fieldKeys(
                     bucket: "main",
                     predicate: (r) => r["_measurement"] == "birdnet",
-                    start: -14d,
+                    start: -{SEEN_TIME},
                     )''')
 
             seen = any(df['_value'].isin([result]))
@@ -165,13 +138,15 @@ def sendRequest(host, port, fpath, mdata, debug):
 
 
 class MicStream():
-    def __init__(self, rate, chunk):
+    def __init__(self, rate, chunk, card):
         self.rate = rate
         self.chunk = chunk
+        self.card = card
 
     def open(self):
         cards = alsaaudio.cards()
-        card_i = cards.index(CARD)
+        print("detected cards", cards, "looking for", self.card)
+        card_i = cards.index(self.card)
         self.stream = alsaaudio.PCM(alsaaudio.PCM_CAPTURE, channels=CHANNELS, format=alsaaudio.PCM_FORMAT_S16_LE, rate=self.rate, periodsize=self.chunk, cardindex=card_i)
 
     def read(self):
@@ -204,7 +179,7 @@ def process(args, data, mdata):
 
 
 def main(args):
-    stream = MicStream(RATE, CHUNK)
+    stream = MicStream(RATE, CHUNK, args.card)
     stream.open()
     buf = deque(maxlen=RECORD_SECONDS)
     stride = 0
@@ -243,5 +218,6 @@ if __name__ == '__main__':
     parser.add_argument('--confidence', type=float, default=CONF_TRHRESH, help='confidence threshold')
     parser.add_argument('--dry', action='store_true', help='do not upload to influx, send telegram')
     parser.add_argument('--debug', action='store_true', help='enable debug prints')
+    parser.add_argument('--card', default=CARD, help='microphone card to look for')
     args = parser.parse_args()
     main(args)
