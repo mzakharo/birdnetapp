@@ -89,13 +89,14 @@ def upload_result(filename, res, confidence, dry, debug):
             shutil.copyfile(filename, file_name)
 
             #send notification if it is a new bird
-            df = query_api.query_data_frame(
-            f'''import "influxdata/influxdb/schema"
-             schema.fieldKeys(
-                    bucket: "main",
-                    predicate: (r) => r["_measurement"] == "birdnet",
-                    start: -{SEEN_TIME},
-                    )''')
+            query = f'''
+                    import "influxdata/influxdb/schema"
+                    schema.fieldKeys(
+                        bucket: "main",
+                        predicate: (r) => r["_measurement"] == "birdnet",
+                        start: -{SEEN_TIME},
+                    )'''
+            df = query_api.query_data_frame(query)
 
             seen = any(df['_value'].isin([result]))
             if not seen:
