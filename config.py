@@ -15,7 +15,7 @@ CONF_TRHRESH = 0.5
 DEBUG_CONF_TRHRESH = 0.1 #minimum confidence for console log
 LAT=43.544811
 LON=-80.248108
-OVERLAP = 1.5
+OVERLAP = 0
 
 #birdNet server
 HOST='127.0.0.1'

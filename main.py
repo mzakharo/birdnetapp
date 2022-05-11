@@ -40,11 +40,12 @@ def send_telegram(filename, sci_result, result, conf, dry=False):
         linkname = sci_result.replace(' ', '+')
         all_species_name = result.replace(' ', '_')
         tb = telebot.TeleBot(TELEGRAM_TOKEN, parse_mode='MARKDOWN')
-        title = f'conf: {int(conf * 100)}%'
-        caption =  f'''[All About Birds](https://allaboutbirds.org/guide/{all_species_name})  
+        title = f'Confidence: {int(conf * 100)}%'
+        caption =  f'''{title}  
+[All About Birds](https://allaboutbirds.org/guide/{all_species_name})  
 [Wikimedia](https://commons.wikimedia.org/w/index.php?search={linkname}&title=Special:MediaSearch&go=Go)'''
         if not dry:
-            tb.send_audio(TELEGRAM_CHATID, audio, performer=result, title=title, caption=caption)
+            tb.send_audio(TELEGRAM_CHATID, audio, performer=sci_result, title=result, caption=caption)
 
 
 def upload_result(filename, savedir, res, confidence, dry, debug):
