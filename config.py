@@ -10,13 +10,12 @@ CHUNK = RATE * 1 # 1 second buffer
 SAVEDIR = '/home/pi/birdNet'
 
 #birdNET settings
-RECORD_SECONDS = 9
+RECORD_SECONDS = 6
 CONF_TRHRESH = 0.5
+DEBUG_CONF_TRHRESH = 0.1 #minimum confidence for console log
 LAT=43.544811
 LON=-80.248108
-OVERLAP = 1 # 2.4
-PMODE = 'avg' # 'max'
-SF_THRESH = 0.05 #reduce false positives
+OVERLAP = 1.5
 
 #birdNet server
 HOST='127.0.0.1'

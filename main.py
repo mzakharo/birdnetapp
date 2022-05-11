@@ -30,8 +30,6 @@ MDATA = {'lat': LAT,
          'lon': LON, 
          'num_results': 3,
          'overlap' : OVERLAP,
-         'pmode' : PMODE,
-         'sf_thresh': SF_THRESH,
          }
 
 
@@ -112,6 +110,10 @@ def upload_result(filename, savedir, res, confidence, dry, debug):
                   .time(ts, WritePrecision.NS)
             write_api.write(BUCKET, ORG, point)
 
+    elif conf >= DEBUG_CONF_TRHRESH:
+        print('Rejected', results)
+
+
 
 
 def sendRequest(host, port, fpath, mdata, debug):
@@ -146,7 +148,7 @@ class MicStream():
 
     def open(self):
         cards = alsaaudio.cards()
-        print("detected cards", cards, "looking for", self.card)
+        print("detected cards", cards, "configuring:", self.card)
         card_i = cards.index(self.card)
         self.stream = alsaaudio.PCM(alsaaudio.PCM_CAPTURE, channels=CHANNELS, format=alsaaudio.PCM_FORMAT_S16_LE, rate=self.rate, periodsize=self.chunk, cardindex=card_i)
 
@@ -159,38 +161,33 @@ class MicStream():
 
         return data
 
-    def active(self):
-        return True
-
     def close(self):
-        if os.name == 'nt':
-            self.stream.stop_stream()
+        if self.stream is not None:
             self.stream.close()
-            self.p.terminate()
-        else:
-            self.stream.close()
+            self.stream = None
+    def __del__(self):
+        self.close()
 
 def process(args, data, mdata):
     data = np.frombuffer(data, dtype=np.int16)
     data = data.reshape((-1, CHANNELS))
     with tempfile.NamedTemporaryFile() as tmp:
-        scipy.io.wavfile.write(tmp.name, RATE, data)
-        res = sendRequest(HOST, PORT, tmp.name, json.dumps(mdata), args.debug)
-        upload_result(tmp.name, SAVEDIR, res, args.confidence, args.dry, args.debug)
+        fname = tmp.name
+        if args.debug:
+            fname = '/tmp/foo.wav'
+        scipy.io.wavfile.write(fname, RATE, data)
+        res = sendRequest(HOST, PORT, fname, json.dumps(mdata), args.debug)
+        upload_result(fname, SAVEDIR, res, args.confidence, args.dry, args.debug)
 
 
-def main(args):
-    stream = MicStream(RATE, CHUNK, args.card)
-    stream.open()
+def main(args, stream):
     buf = deque(maxlen=RECORD_SECONDS)
     stride = 0
-
+    futures = []
 
     print("started", flush=True)
-
-    futures = []
     with ThreadPoolExecutor(max_workers=1) as exc:
-        while stream.active():
+        while True:
             try:
                 data = stream.read()
             except Exception as e:
@@ -221,4 +218,10 @@ if __name__ == '__main__':
     parser.add_argument('--debug', action='store_true', help='enable debug prints')
     parser.add_argument('--card', default=CARD, help='microphone card to look for')
     args = parser.parse_args()
-    main(args)
+
+    stream = MicStream(RATE, CHUNK, args.card)
+    stream.open()
+    try:
+        main(args, stream)
+    finally:
+        stream.close()
