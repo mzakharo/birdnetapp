@@ -173,7 +173,7 @@ class MicStream():
 def process(args, data, mdata):
     data = np.frombuffer(data, dtype=np.int16)
     data = data.reshape((-1, CHANNELS))
-    with tempfile.NamedTemporaryFile() as tmp:
+    with tempfile.NamedTemporaryFile(suffix='.wav') as tmp:
         fname = tmp.name
         if args.debug:
             fname = '/tmp/foo.wav'
