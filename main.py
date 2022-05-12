@@ -122,9 +122,10 @@ def sendRequest(host, port, fpath, mdata, debug):
 
     start_time = time.time()
     # Make payload
+    _, file_extension = os.path.splitext(fpath)
     with open(fpath, 'rb') as audio:
         multipart_form_data = {
-            'audio': ('audio.wav', audio),
+            'audio': ('audio' + file_extension, audio),
             'meta': (None, mdata)
         }
         # Send request
