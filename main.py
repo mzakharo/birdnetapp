@@ -147,6 +147,7 @@ class MicStream():
         self.rate = rate
         self.chunk = chunk
         self.card = card
+        self.stream = None
 
     def open(self):
         cards = alsaaudio.cards()
