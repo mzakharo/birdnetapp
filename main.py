@@ -15,6 +15,7 @@ import shutil
 import telebot
 import tempfile
 from concurrent.futures import ThreadPoolExecutor
+from pydub import AudioSegment
 
 from secrets import TELEGRAM_TOKEN, TELEGRAM_CHATID, INFLUX_URL, INFLUX_TOKEN
 from config import *
@@ -65,12 +66,12 @@ def upload_result(filename, savedir, res, confidence, dry, debug):
             os.makedirs(dir_path)
 
         date_time = datetime.datetime.now().strftime("%Y%m%d_%H")
-        file_name = os.path.join(dir_path, date_time + '.wav')
-        file_name_meta = os.path.join(dir_path, date_time + '.json')
+        export_filename = os.path.join(dir_path, date_time + '.mp3')
+        export_meta = os.path.join(dir_path, date_time + '.json')
 
         meta = {}
-        if os.path.exists(file_name_meta):
-            with open(file_name_meta, 'r') as f:
+        if os.path.exists(export_meta):
+            with open(export_meta, 'r') as f:
                 try:
                     meta = json.loads(f.read())
                 except json.decoer.JSONDecodeError:
@@ -80,12 +81,13 @@ def upload_result(filename, savedir, res, confidence, dry, debug):
         count = meta.get('count', 0)
 
         count += 1
-        print(result, file_name,'conf', conf, 'old_conf', old_conf, 'count', count)
+        print(result, export_filename, 'conf', conf, 'old_conf', old_conf, 'count', count)
         meta['count'] = count
         if conf >= old_conf:
             meta['conf'] = conf
             meta['results'] = results
-            shutil.copyfile(filename, file_name)
+            AudioSegment.from_wav(filename).export(export_filename, format="mp3", parameters=["-ac", "1", "-vol", "150", "-q:a",  "9"])
+            #shutil.copyfile(filename, export_filename)
 
             #send notification if it is a new bird
             query = f'''
@@ -99,9 +101,9 @@ def upload_result(filename, savedir, res, confidence, dry, debug):
 
             seen = any(df['_value'].isin([result]))
             if not seen:
-                send_telegram(filename, sci_result, result, conf, dry=dry)
+                send_telegram(export_filename, sci_result, result, conf, dry=dry)
 
-        with open(file_name_meta, 'w') as f:
+        with open(export_meta, 'w') as f:
             f.write(json.dumps(meta))
 
         if not dry:

@@ -1,10 +1,14 @@
+#for BirdeNet-Analyser
+tflite-runtime
+librosa
+bottle
+
+#For this app
 pandas
 pyalsaaudio
 numpy
 scipy
-tflite-runtime
-librosa
-bottle
 influxdb-client
 pyTelegramBotAPI
+pydub
 
