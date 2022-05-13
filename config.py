@@ -9,6 +9,9 @@ CHUNK = RATE * 1 # 1 second buffer
 #Files saved here
 SAVEDIR = '/home/pi/birdNet'
 
+#Number of most recent files to keep per bird
+KEEP_FILES = 100
+
 #birdNET settings
 RECORD_SECONDS = 6
 CONF_TRHRESH = 0.5

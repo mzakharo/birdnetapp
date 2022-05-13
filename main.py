@@ -19,6 +19,7 @@ from pydub import AudioSegment
 
 from secrets import TELEGRAM_TOKEN, TELEGRAM_CHATID, INFLUX_URL, INFLUX_TOKEN
 from config import *
+from clean import cleanup
 
 
 influx_client = InfluxDBClient(url=INFLUX_URL, token=INFLUX_TOKEN, org=ORG)
@@ -64,6 +65,8 @@ def upload_result(filename, savedir, res, confidence, dry, debug):
 
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
+
+        cleanup(dir_path, KEEP_FILES) #avoid running out of storage
 
         date_time = datetime.datetime.now().strftime("%Y%m%d_%H")
         export_filename = os.path.join(dir_path, date_time + '.mp3')

@@ -8,6 +8,7 @@ Type=simple
 Restart=always
 RestartSec=30
 ExecStart=/usr/bin/python3 -u /home/pi/birdnetapp/main.py
+User=pi
 
 [Install]
 WantedBy=multi-user.target
