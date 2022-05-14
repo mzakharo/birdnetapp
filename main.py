@@ -20,6 +20,7 @@ from pydub import AudioSegment
 from secrets import TELEGRAM_TOKEN, TELEGRAM_CHATID, INFLUX_URL, INFLUX_TOKEN
 from config import *
 from clean import cleanup
+import subprocess
 
 
 influx_client = InfluxDBClient(url=INFLUX_URL, token=INFLUX_TOKEN, org=ORG)
@@ -50,7 +51,7 @@ def send_telegram(filename, sci_result, result, conf, dry=False):
             tb.send_audio(TELEGRAM_CHATID, audio, performer=sci_result, title=result, caption=caption)
 
 
-def upload_result(ts, filename, savedir, res, confidence, dry, debug):
+def upload_result(ts, filename, savedir, res, min_confidence, dry, debug):
     if res['msg'] != "success":
         return
     results = res['results']
@@ -64,7 +65,7 @@ def upload_result(ts, filename, savedir, res, confidence, dry, debug):
 
     sci_result, result = result.split('_')
 
-    if conf >= confidence or n < 2:
+    if conf >= min_confidence or n < 2:
         dir_path = os.path.join(savedir, result)
 
         if not os.path.exists(dir_path):
@@ -74,6 +75,7 @@ def upload_result(ts, filename, savedir, res, confidence, dry, debug):
 
         date_time = ts.strftime("%y-%m-%d_%H-%M-%S")
         export_filename = os.path.join(dir_path, date_time + EXPORT_FORMAT) 
+        export_spec = os.path.join(dir_path, date_time + '.png') 
         export_meta = os.path.join(dir_path, date_time + '.json')
 
         meta = {}
@@ -87,6 +89,8 @@ def upload_result(ts, filename, savedir, res, confidence, dry, debug):
             AudioSegment.from_wav(filename).export(export_filename, format="mp3", parameters=["-ac", "1", "-vol", "150", "-q:a",  "9"])
         else:
             shutil.copyfile(filename, export_filename)
+
+        subprocess.check_output(['sox', filename, '-n', 'spectrogram', '-o', export_spec])
 
         with open(export_meta, 'w') as f:
             f.write(json.dumps(meta))
@@ -183,7 +187,7 @@ def process(args, ts, data, mdata):
             fname = '/tmp/foo.wav'
         scipy.io.wavfile.write(fname, RATE, data)
         res = sendRequest(HOST, PORT, fname, json.dumps(mdata), args.debug)
-        upload_result(ts, fname, SAVEDIR, res, args.confidence, args.dry, args.debug)
+        upload_result(ts, fname, SAVEDIR, res, args.min_confidence, args.dry, args.debug)
 
 
 def main(args, stream):
@@ -220,7 +224,7 @@ def main(args, stream):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--confidence', type=float, default=CONF_TRHRESH, help='confidence threshold')
+    parser.add_argument('--min_confidence', type=float, default=CONF_TRHRESH, help='minimum confidence threshold')
     parser.add_argument('--dry', action='store_true', help='do not upload to influx, send telegram')
     parser.add_argument('--debug', action='store_true', help='enable debug prints')
     parser.add_argument('--card', default=CARD, help='microphone card to look for')
