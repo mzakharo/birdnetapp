@@ -10,7 +10,7 @@ CHUNK = RATE * 1 # 1 second buffer
 SAVEDIR = '/home/pi/birdNet'
 
 #Number of most recent files to keep per bird
-KEEP_FILES = 200
+KEEP_FILES = 300
 
 #whether store longterm results in wav or mp3
 EXPORT_FORMAT = '.wav'
