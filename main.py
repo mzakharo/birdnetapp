@@ -109,11 +109,11 @@ def upload_result(ts, filename, savedir, res, confidence, dry, debug):
             send_telegram(export_filename, sci_result, r, conf, dry=dry)
 
         if not dry:
+            ts_utc = datetime.datetime.utcfromtimestamp(ts.timestamp())
             point = Point("birdnet") \
                   .field(result, conf) \
-                  .time(int(ts.timestamp()), WritePrecision.S)
+                  .time(ts_utc, WritePrecision.NS)
             write_api.write(BUCKET, ORG, point)
-
 
 
 def sendRequest(host, port, fpath, mdata, debug):
