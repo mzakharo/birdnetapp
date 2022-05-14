@@ -50,17 +50,21 @@ def send_telegram(filename, sci_result, result, conf, dry=False):
             tb.send_audio(TELEGRAM_CHATID, audio, performer=sci_result, title=result, caption=caption)
 
 
-def upload_result(filename, savedir, res, confidence, dry, debug):
+def upload_result(ts, filename, savedir, res, confidence, dry, debug):
     if res['msg'] != "success":
         return
     results = res['results']
     if len(results) == 0:
         return
     result, conf = results[0]
+    
+    n = 1000
+    if isinstance(conf, (list, tuple)):
+        conf, n = conf
 
     sci_result, result = result.split('_')
 
-    if conf >= confidence:
+    if conf >= confidence or n < 2:
         dir_path = os.path.join(savedir, result)
 
         if not os.path.exists(dir_path):
@@ -68,57 +72,47 @@ def upload_result(filename, savedir, res, confidence, dry, debug):
 
         cleanup(dir_path, KEEP_FILES) #avoid running out of storage
 
-        date_time = datetime.datetime.now().strftime("%Y%m%d_%H")
-        export_filename = os.path.join(dir_path, date_time + '.mp3')
+        date_time = ts.strftime("%y-%m-%d_%H-%M-%S")
+        export_filename = os.path.join(dir_path, date_time + EXPORT_FORMAT) 
         export_meta = os.path.join(dir_path, date_time + '.json')
 
         meta = {}
-        if os.path.exists(export_meta):
-            with open(export_meta, 'r') as f:
-                try:
-                    meta = json.loads(f.read())
-                except json.decoer.JSONDecodeError:
-                    pass
+        meta['conf'] = conf
+        meta['results'] = results
+        meta['n'] = n
 
-        old_conf = meta.get('conf', 0)
-        count = meta.get('count', 0)
+        print(result, export_filename, 'conf', conf, 'n', n)
 
-        count += 1
-        print(result, export_filename, 'conf', conf, 'old_conf', old_conf, 'count', count)
-        meta['count'] = count
-        if conf >= old_conf:
-            meta['conf'] = conf
-            meta['results'] = results
+        if export_filename.endswith('.mp3'):
             AudioSegment.from_wav(filename).export(export_filename, format="mp3", parameters=["-ac", "1", "-vol", "150", "-q:a",  "9"])
-            #shutil.copyfile(filename, export_filename)
-
-            #send notification if it is a new bird
-            query = f'''
-                    import "influxdata/influxdb/schema"
-                    schema.fieldKeys(
-                        bucket: "main",
-                        predicate: (r) => r["_measurement"] == "birdnet",
-                        start: -{SEEN_TIME},
-                    )'''
-            df = query_api.query_data_frame(query)
-
-            seen = any(df['_value'].isin([result]))
-            if not seen:
-                send_telegram(export_filename, sci_result, result, conf, dry=dry)
+        else:
+            shutil.copyfile(filename, export_filename)
 
         with open(export_meta, 'w') as f:
             f.write(json.dumps(meta))
 
+        #send notification if it is a new bird
+        query = f'''
+                import "influxdata/influxdb/schema"
+                schema.fieldKeys(
+                    bucket: "main",
+                    predicate: (r) => r["_measurement"] == "birdnet",
+                    start: -{SEEN_TIME},
+                )'''
+        df = query_api.query_data_frame(query)
+
+        seen = any(df['_value'].isin([result]))
+        if not seen or n < 2:
+            r = result
+            if n < 2:
+                r = r + f' n={n}'
+            send_telegram(export_filename, sci_result, r, conf, dry=dry)
+
         if not dry:
-            ts = datetime.datetime.utcnow()
             point = Point("birdnet") \
                   .field(result, conf) \
-                  .time(ts, WritePrecision.NS)
+                  .time(int(ts.timestamp()), WritePrecision.S)
             write_api.write(BUCKET, ORG, point)
-
-    elif conf >= DEBUG_CONF_TRHRESH:
-        print('Rejected', results)
-
 
 
 
@@ -148,24 +142,27 @@ def sendRequest(host, port, fpath, mdata, debug):
 
 
 class MicStream():
-    def __init__(self, rate, chunk, card):
+    def __init__(self, rate, channels, chunk, card):
         self.rate = rate
         self.chunk = chunk
         self.card = card
         self.stream = None
+        self.channels = channels
 
     def open(self):
         cards = alsaaudio.cards()
         print("detected cards", cards, "configuring:", self.card)
         card_i = cards.index(self.card)
-        self.stream = alsaaudio.PCM(alsaaudio.PCM_CAPTURE, channels=CHANNELS, format=alsaaudio.PCM_FORMAT_S16_LE, rate=self.rate, periodsize=self.chunk, cardindex=card_i)
+        self.stream = alsaaudio.PCM(alsaaudio.PCM_CAPTURE, channels=self.channels, format=alsaaudio.PCM_FORMAT_S16_LE, rate=self.rate, periodsize=self.chunk, cardindex=card_i)
 
     def read(self):
         l, data = self.stream.read()
         if l == -32:
             raise Exception("Warning: Overflow occured")
-        elif l != self.chunk:
-            raise Exception("Warning: incorrect frame length", l//2, self.chunk//2)
+        elif l < 0:
+            raise Exception(f"Unknown error occured: {l}")
+        elif len(data) != self.chunk * self.channels * 2:
+            raise Exception(f"Warning: incorrect frame length: got {len(data)} expected {self.chunk * self.channels * 2}")
 
         return data
 
@@ -176,7 +173,8 @@ class MicStream():
     def __del__(self):
         self.close()
 
-def process(args, data, mdata):
+def process(args, ts, data, mdata):
+    mdata['week'] = ts.isocalendar()[1]
     data = np.frombuffer(data, dtype=np.int16)
     data = data.reshape((-1, CHANNELS))
     with tempfile.NamedTemporaryFile(suffix='.wav') as tmp:
@@ -185,7 +183,7 @@ def process(args, data, mdata):
             fname = '/tmp/foo.wav'
         scipy.io.wavfile.write(fname, RATE, data)
         res = sendRequest(HOST, PORT, fname, json.dumps(mdata), args.debug)
-        upload_result(fname, SAVEDIR, res, args.confidence, args.dry, args.debug)
+        upload_result(ts, fname, SAVEDIR, res, args.confidence, args.dry, args.debug)
 
 
 def main(args, stream):
@@ -210,8 +208,9 @@ def main(args, stream):
                 if len(buf) != buf.maxlen:
                     continue
                 data = b''.join(buf)
-                MDATA['week'] = datetime.datetime.now().isocalendar()[1]
-                futures.append(exc.submit(process,args, data, MDATA))
+
+                ts = datetime.datetime.now().replace(microsecond=0)
+                futures.append(exc.submit(process, args, ts,  data, MDATA))
                 assert len(futures) < 10 , "Processing not keeping up with incoming data"
                 for f in futures:
                     if f.done():
@@ -227,7 +226,7 @@ if __name__ == '__main__':
     parser.add_argument('--card', default=CARD, help='microphone card to look for')
     args = parser.parse_args()
 
-    stream = MicStream(RATE, CHUNK, args.card)
+    stream = MicStream(RATE, CHANNELS, CHUNK, args.card)
     stream.open()
     try:
         main(args, stream)
