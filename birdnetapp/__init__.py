@@ -57,14 +57,13 @@ def send_telegram_delayed(delayed_telegrams,ts, res, delay=0, dry=False):
         name = res['name']
         conf = res['conf']
         count = 1
-        old_count = 0
         old_conf = 0
         if name in delayed_telegrams:
             msg = delayed_telegrams[name]
-            old_count = msg['count']
+            msg['count'] += 1
+            count = msg['count']
             old_conf = msg['conf']
         if conf >= old_conf: 
-            count += old_count
             res['count'] = count
             res['ts'] = ts
             delayed_telegrams[name] = res
