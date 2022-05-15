@@ -11,7 +11,7 @@ def test1():
 
     delayed_telegrams = {}
     ts = datetime.datetime.now().replace(microsecond=0)
-    res = upload_result(ts, FILENAME, SAVEDIR, res, min_confidence=0, dry=DRY, debug=True, force_telegram=True)
+    res = upload_result(ts, FILENAME, SAVEDIR, res, min_confidence=0, dry=DRY, force_telegram=True)
     send_telegram_delayed(delayed_telegrams, ts, res, 1, dry=DRY)
 
     #update but not send

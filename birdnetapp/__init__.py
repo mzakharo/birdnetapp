@@ -17,11 +17,13 @@ import tempfile
 from concurrent.futures import ThreadPoolExecutor
 from pydub import AudioSegment
 import subprocess
+import logging
 
 from .secrets import TELEGRAM_TOKEN, TELEGRAM_CHATID, INFLUX_URL, INFLUX_TOKEN
 from .config import *
 from .clean import cleanup
 
+_LOGGER = logging.getLogger(__name__)
 
 influx_client = InfluxDBClient(url=INFLUX_URL, token=INFLUX_TOKEN, org=ORG)
 write_api = influx_client.write_api(write_options=SYNCHRONOUS)
@@ -37,7 +39,7 @@ MDATA = {'lat': LAT,
 
 
 def send_telegram(filename, sci_result, result, conf, count=1,dry=False):
-    print('sending telegram message for', result)
+    _LOGGER.info(f'sending telegram message for {result}')
     with open(filename, 'rb') as audio:
         linkname = sci_result.replace(' ', '+')
         all_species_name = result.replace(' ', '_')
@@ -50,7 +52,7 @@ Count: {count}
         if not dry:
             tb.send_audio(TELEGRAM_CHATID, audio, performer=sci_result, title=result, caption=caption)
         else:
-            print('telegram', result, sci_result, caption)
+            _LOGGER.info(f'telegram {result} {sci_result} {caption}')
 
 def send_telegram_delayed(delayed_telegrams,ts, res, delay=0, dry=False):
 
@@ -78,7 +80,7 @@ def send_telegram_delayed(delayed_telegrams,ts, res, delay=0, dry=False):
 
 
             
-def upload_result(ts, filename, savedir, res, min_confidence, dry=False, debug=False, force_telegram=False):
+def upload_result(ts, filename, savedir, res, min_confidence, dry=False, force_telegram=False):
     if res['msg'] != "success":
         return
     results = res['results']
@@ -111,7 +113,7 @@ def upload_result(ts, filename, savedir, res, min_confidence, dry=False, debug=F
         meta['results'] = results
         meta['n'] = n
 
-        print(result, export_filename, 'conf', conf, 'n', n)
+        _LOGGER.info(f"{result} {export_filename} conf: {conf}, n: {n}")
 
         if export_filename.endswith('.mp3'):
             AudioSegment.from_wav(filename).export(export_filename, format="mp3", parameters=["-ac", "1", "-vol", "150", "-q:a",  "9"])
@@ -150,7 +152,7 @@ def upload_result(ts, filename, savedir, res, min_confidence, dry=False, debug=F
     return out
 
 
-def sendRequest(host, port, fpath, mdata, debug):
+def sendRequest(host, port, fpath, mdata):
     url = 'http://{}:{}/analyze'.format(host, port)
 
     start_time = time.time()
@@ -166,8 +168,7 @@ def sendRequest(host, port, fpath, mdata, debug):
 
     end_time = time.time()
 
-    if debug:
-        print('Response: {}, Time: {:.4f}s'.format(response.text, end_time - start_time), flush=True)
+    _LOGGER.debug('Response: {}, Time: {:.4f}s'.format(response.text, end_time - start_time))
 
     # Convert to dict
     data = json.loads(response.text)
@@ -185,7 +186,7 @@ class MicStream():
 
     def open(self):
         cards = alsaaudio.cards()
-        print("detected cards", cards, "configuring:", self.card)
+        _LOGGER.info(f"detected cards {cards} configuring: {self.card}")
         card_i = cards.index(self.card)
         self.stream = alsaaudio.PCM(alsaaudio.PCM_CAPTURE, channels=self.channels, format=alsaaudio.PCM_FORMAT_S16_LE, rate=self.rate, periodsize=self.chunk, cardindex=card_i)
 
@@ -213,11 +214,9 @@ def process(args, ts, data, mdata):
     data = data.reshape((-1, CHANNELS))
     with tempfile.NamedTemporaryFile(suffix='.wav') as tmp:
         fname = tmp.name
-        if args.debug:
-            fname = '/tmp/foo.wav'
         scipy.io.wavfile.write(fname, RATE, data)
-        res = sendRequest(HOST, PORT, fname, json.dumps(mdata), args.debug)
-        return upload_result(ts, fname, SAVEDIR, res, args.min_confidence, args.dry, args.debug)
+        res = sendRequest(HOST, PORT, fname, json.dumps(mdata))
+        return upload_result(ts, fname, SAVEDIR, res, args.min_confidence, args.dry)
 
 
 def runner(args, stream):
@@ -227,17 +226,17 @@ def runner(args, stream):
 
     delayed_telegrams = {}
 
-    print("started", flush=True)
+    _LOGGER.info("started")
     with ThreadPoolExecutor(max_workers=1) as exc:
         while True:
             try:
                 data = stream.read()
             except Exception as e:
-                print(e)
+                _LOGGER.warning(e)
                 continue
             stride += 1
-            if args.debug:
-                print(stride, len(data))
+            _LOGGER.debug(f"{stride} {len(data)}")
+
             buf.append(data)
             if stride == RECORD_SECONDS//2:
                 stride = 0
@@ -259,9 +258,14 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--min_confidence', type=float, default=CONF_TRHRESH, help='minimum confidence threshold')
     parser.add_argument('--dry', action='store_true', help='do not upload to influx, send telegram')
-    parser.add_argument('--debug', action='store_true', help='enable debug prints')
+    parser.add_argument('--debug', action='store_true', help='enable debug logs')
     parser.add_argument('--card', default=CARD, help='microphone card to look for')
     args = parser.parse_args()
+
+    if args.debug:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.INFO)
 
     stream = MicStream(RATE, CHANNELS, CHUNK, args.card)
     stream.open()
