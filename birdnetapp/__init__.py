@@ -38,7 +38,12 @@ MDATA = {'lat': LAT,
          }
 
 
-def send_telegram(filename, sci_result, result, conf, count=1,dry=False):
+def send_telegram(msg, dry=False):
+    filename = msg['fname']
+    sci_result = msg['sci']
+    result = msg['name']
+    conf = msg['conf']
+    count = msg['count']
     _LOGGER.info(f'sending telegram message for {result}')
     with open(filename, 'rb') as audio:
         linkname = sci_result.replace(' ', '+')
@@ -74,13 +79,9 @@ def send_notification_delayed(delayed_notifications,ts, res, delay=0, dry=False)
                 delayed_notifications[name] = res
 
     #send delayed notifications
-    out = []
     for name in list(delayed_notifications):
         if ts >= delayed_notifications[name]['ts'] + datetime.timedelta(seconds=delay):
-            msg = delayed_notifications.pop(name)
-            out.append(msg)
-            send_telegram(msg['fname'], msg['sci'], msg['name'], msg['conf'], msg['count'], dry=dry)
-    return out
+            return delayed_notifications.pop(name)
 
 
             
@@ -250,8 +251,9 @@ def runner(args, stream):
                     if f.done():
                         res = f.result()
                         futures.remove(f)
-                        send_notification_delayed(delayed_notifications,ts, res, delay=NOTIFICATION_DELAY_SECONDS, dry=args.dry)
-
+                        msg = send_notification_delayed(delayed_notifications,ts, res, delay=args.notification_delay, dry=args.dry)
+                        if msg is not None:
+                            futures.append(exc.submit(send_telegram, msg, args.dry))
 
 def main():
     parser = argparse.ArgumentParser()
@@ -259,6 +261,7 @@ def main():
     parser.add_argument('--dry', action='store_true', help='do not upload to influx, send notifications')
     parser.add_argument('--debug', action='store_true', help='enable debug logs')
     parser.add_argument('--card', default=CARD, help='microphone card to look for')
+    parser.add_argument('--notification_delay', type=int, default=NOTIFICATION_DELAY_SECONDS, help='notificaiton delay')
     args = parser.parse_args()
 
     if args.debug:

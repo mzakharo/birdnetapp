@@ -10,4 +10,5 @@ def test1():
     result, conf = res['results'][0]
     sci_result, result = result.split('_')
     count = 1
-    send_telegram(export_filename, sci_result, result, conf, count, dry=True)
+    msg = {'fname' : export_filename,'sci' :  sci_result, 'name' : result, 'conf' : conf, 'count' : count }
+    send_telegram(msg, dry=True)
