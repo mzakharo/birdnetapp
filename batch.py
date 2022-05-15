@@ -1,5 +1,5 @@
 import os, sys
-from main import MDATA, HOST, PORT, sendRequest
+from birdnetapp import MDATA, HOST, PORT, sendRequest
 import json
 import datetime
 

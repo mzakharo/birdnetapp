@@ -1,4 +1,4 @@
 *.swp
 *.swo
-/secrets.py
+secrets.py
 __pycache__
