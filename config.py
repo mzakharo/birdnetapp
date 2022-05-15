@@ -16,8 +16,11 @@ KEEP_FILES = 300
 EXPORT_FORMAT = '.wav'
 
 #birdNET settings
+
+#Note: recording length has impact on conf_thresh
+#longer recording could lower CONF_THRESH to achieve the same detection rate
 RECORD_SECONDS = 6
-CONF_TRHRESH = 0.6
+CONF_TRHRESH = 0.55
 LAT=43.544811
 LON=-80.248108
 OVERLAP = 0
