@@ -18,7 +18,7 @@ INFLUX_URL = "http://host:PORT"
 INFLUX_TOKEN= "XXXXXX"
  ```
  - Install dependencies via `pip3 install -r requirements.txt`
- - sudo apt install sox ffmpeg
+ - `sudo apt install sox ffmpeg`
  - run the server:  `cd /home/pi/BirdNET-Analyzer && python3 server.py`
  - Edit [config.py](https://github.com/mzakharo/birdnetapp/blob/main/birdnetapp/config.py) and adjust Microphone (`RATE`, `CARD`, `CHANNELS`), and birdnet (`LON`/`LAT`) settings
  - run the app: `cd /home/pi/birdnetapp && python3 main.py'
