@@ -216,7 +216,7 @@ def process(args, ts, data, mdata):
             fname = '/tmp/foo.wav'
         scipy.io.wavfile.write(fname, RATE, data)
         res = sendRequest(HOST, PORT, fname, json.dumps(mdata), args.debug)
-        upload_result(ts, fname, SAVEDIR, res, args.min_confidence, args.dry, args.debug)
+        return upload_result(ts, fname, SAVEDIR, res, args.min_confidence, args.dry, args.debug)
 
 
 def runner(args, stream):
