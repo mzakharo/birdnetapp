@@ -8,4 +8,5 @@ AudioSegment.from_wav(FILENAME).export(export_filename, format="mp3", parameters
 
 result, conf = res['results'][0]
 sci_result, result = result.split('_')
-send_telegram(export_filename, sci_result, result, conf, dry=True)
+count = 1
+send_telegram(export_filename, sci_result, result, conf, count, dry=True)

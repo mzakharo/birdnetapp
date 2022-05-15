@@ -36,27 +36,54 @@ MDATA = {'lat': LAT,
          }
 
 
-
-
-def send_telegram(filename, sci_result, result, conf, dry=False):
+def send_telegram(filename, sci_result, result, conf, count=1,dry=False):
+    print('sending telegram message for', result)
     with open(filename, 'rb') as audio:
         linkname = sci_result.replace(' ', '+')
         all_species_name = result.replace(' ', '_')
         tb = telebot.TeleBot(TELEGRAM_TOKEN, parse_mode='MARKDOWN')
         title = f'Confidence: {int(conf * 100)}%'
         caption =  f'''{title}  
+Count: {count}  
 [All About Birds](https://allaboutbirds.org/guide/{all_species_name})  
 [Wikimedia](https://commons.wikimedia.org/w/index.php?search={linkname}&title=Special:MediaSearch&go=Go)'''
         if not dry:
             tb.send_audio(TELEGRAM_CHATID, audio, performer=sci_result, title=result, caption=caption)
 
+def send_telegram_delayed(delayed_telegrams,ts, res, delay=0, dry=False):
 
-def upload_result(ts, filename, savedir, res, min_confidence, dry, debug):
+    #store most confident result, along with detection count
+    if res is not None:
+        name = res['name']
+        conf = res['conf']
+        count = 1
+        old_count = 0
+        old_conf = 0
+        if name in delayed_telegrams:
+            msg = delayed_telegrams[name]
+            old_count = msg['count']
+            old_conf = msg['conf']
+        if conf >= old_conf: 
+            count += old_count
+            res['count'] = count
+            res['ts'] = ts
+            delayed_telegrams[name] = res
+
+    #send delayed telegrams
+    for name in list(delayed_telegrams):
+        if ts >= delayed_telegrams[name]['ts'] + datetime.timedelta(seconds=delay):
+            msg = delayed_telegrams.pop(name)
+            send_telegram(msg['fname'], msg['sci'], msg['name'], msg['conf'], msg['count'], dry=dry)
+
+
+            
+def upload_result(ts, filename, savedir, res, min_confidence, dry=False, debug=False, force_telegram=False):
     if res['msg'] != "success":
         return
     results = res['results']
     if len(results) == 0:
         return
+    out = None
     result, conf = results[0]
     
     n = 1000
@@ -106,11 +133,12 @@ def upload_result(ts, filename, savedir, res, min_confidence, dry, debug):
         df = query_api.query_data_frame(query)
 
         seen = any(df['_value'].isin([result]))
-        if not seen or n < 2:
+        if not seen or n < 2 or force_telegram:
             r = result
             if n < 2:
                 r = r + f' n={n}'
-            send_telegram(export_filename, sci_result, r, conf, dry=dry)
+            out = {'fname' : export_filename,'sci' :  sci_result, 'name' : r, 'conf' : conf}
+            #send_telegram(export_filename, sci_result, r, conf, dry=dry)
 
         if not dry:
             ts_utc = datetime.datetime.utcfromtimestamp(ts.timestamp())
@@ -118,6 +146,7 @@ def upload_result(ts, filename, savedir, res, min_confidence, dry, debug):
                   .field(result, conf) \
                   .time(ts_utc, WritePrecision.NS)
             write_api.write(BUCKET, ORG, point)
+    return out
 
 
 def sendRequest(host, port, fpath, mdata, debug):
@@ -195,6 +224,8 @@ def main(args, stream):
     stride = 0
     futures = []
 
+    delayed_telegrams = {}
+
     print("started", flush=True)
     with ThreadPoolExecutor(max_workers=1) as exc:
         while True:
@@ -218,8 +249,9 @@ def main(args, stream):
                 assert len(futures) < 10 , "Processing not keeping up with incoming data"
                 for f in futures:
                     if f.done():
-                        f.result()
+                        res = f.result()
                         futures.remove(f)
+                        send_telegram_delayed(delayed_telegrams,ts, res, delay=TELEGRAM_DELAY_SECONDS, dry=args.dry)
 
 
 if __name__ == '__main__':
