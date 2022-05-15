@@ -54,48 +54,49 @@ Count: {count}
         else:
             _LOGGER.info(f'telegram {result} {sci_result} {caption}')
 
-def send_telegram_delayed(delayed_telegrams,ts, res, delay=0, dry=False):
+def send_notification_delayed(delayed_notifications,ts, res, delay=0, dry=False):
 
     #store most confident result, along with detection count
     if res is not None:
         name = res['name']
-        conf = res['conf']
-        count = 1
-        old_conf = 0
-        if name in delayed_telegrams:
-            msg = delayed_telegrams[name]
-            msg['count'] += 1
-            count = msg['count']
-            old_conf = msg['conf']
-        if conf >= old_conf: 
-            res['count'] = count
-            res['ts'] = ts
-            delayed_telegrams[name] = res
 
-    #send delayed telegrams
-    for name in list(delayed_telegrams):
-        if ts >= delayed_telegrams[name]['ts'] + datetime.timedelta(seconds=delay):
-            msg = delayed_telegrams.pop(name)
+        if res['notify'] and name not in delayed_notifications:
+            res['count'] = 0
+            delayed_notifications[name] = res
+
+        if name in delayed_notifications:
+            msg = delayed_notifications[name]
+            msg['count'] += 1
+            msg['ts'] = ts
+            if res['conf'] > msg['conf']:
+                res['count'] = msg['count']
+                res['ts'] = ts
+                delayed_notifications[name] = res
+
+    #send delayed notifications
+    out = []
+    for name in list(delayed_notifications):
+        if ts >= delayed_notifications[name]['ts'] + datetime.timedelta(seconds=delay):
+            msg = delayed_notifications.pop(name)
+            out.append(msg)
             send_telegram(msg['fname'], msg['sci'], msg['name'], msg['conf'], msg['count'], dry=dry)
+    return out
 
 
             
-def upload_result(ts, filename, savedir, res, min_confidence, dry=False, force_telegram=False):
+def upload_result(ts, filename, savedir, res, min_confidence, dry=False, force_notify=False):
     if res['msg'] != "success":
         return
     results = res['results']
     if len(results) == 0:
         return
-    out = None
+
     result, conf = results[0]
-    
-    n = 1000
-    if isinstance(conf, (list, tuple)):
-        conf, n = conf
-
     sci_result, result = result.split('_')
+    out = None
 
-    if conf >= min_confidence or n < 2:
+    if conf >= min_confidence:
+
         dir_path = os.path.join(savedir, result)
 
         if not os.path.exists(dir_path):
@@ -111,9 +112,8 @@ def upload_result(ts, filename, savedir, res, min_confidence, dry=False, force_t
         meta = {}
         meta['conf'] = conf
         meta['results'] = results
-        meta['n'] = n
 
-        _LOGGER.info(f"{result} {export_filename} conf: {conf}, n: {n}")
+        _LOGGER.info(f"{result} {export_filename} conf: {conf}")
 
         if export_filename.endswith('.mp3'):
             AudioSegment.from_wav(filename).export(export_filename, format="mp3", parameters=["-ac", "1", "-vol", "150", "-q:a",  "9"])
@@ -136,12 +136,10 @@ def upload_result(ts, filename, savedir, res, min_confidence, dry=False, force_t
         df = query_api.query_data_frame(query)
 
         seen = any(df['_value'].isin([result]))
-        if not seen or n < 2 or force_telegram:
-            r = result
-            if n < 2:
-                r = r + f' n={n}'
-            out = {'fname' : export_filename,'sci' :  sci_result, 'name' : r, 'conf' : conf}
-            #send_telegram(export_filename, sci_result, r, conf, dry=dry)
+
+        notify = not seen or force_notify
+
+        out = {'fname' : export_filename,'sci' :  sci_result, 'name' : result, 'conf' : conf, 'notify' : notify}
 
         if not dry:
             ts_utc = datetime.datetime.utcfromtimestamp(ts.timestamp())
@@ -149,6 +147,7 @@ def upload_result(ts, filename, savedir, res, min_confidence, dry=False, force_t
                   .field(result, conf) \
                   .time(ts_utc, WritePrecision.NS)
             write_api.write(BUCKET, ORG, point)
+
     return out
 
 
@@ -224,7 +223,7 @@ def runner(args, stream):
     stride = 0
     futures = []
 
-    delayed_telegrams = {}
+    delayed_notifications = {}
 
     _LOGGER.info("started")
     with ThreadPoolExecutor(max_workers=1) as exc:
@@ -251,13 +250,13 @@ def runner(args, stream):
                     if f.done():
                         res = f.result()
                         futures.remove(f)
-                        send_telegram_delayed(delayed_telegrams,ts, res, delay=TELEGRAM_DELAY_SECONDS, dry=args.dry)
+                        send_notification_delayed(delayed_notifications,ts, res, delay=NOTIFICATION_DELAY_SECONDS, dry=args.dry)
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--min_confidence', type=float, default=CONF_TRHRESH, help='minimum confidence threshold')
-    parser.add_argument('--dry', action='store_true', help='do not upload to influx, send telegram')
+    parser.add_argument('--dry', action='store_true', help='do not upload to influx, send notifications')
     parser.add_argument('--debug', action='store_true', help='enable debug logs')
     parser.add_argument('--card', default=CARD, help='microphone card to look for')
     args = parser.parse_args()

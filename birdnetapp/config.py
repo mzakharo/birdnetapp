@@ -15,8 +15,8 @@ KEEP_FILES = 300
 #whether store longterm results in wav or mp3
 EXPORT_FORMAT = '.wav'
 
-#how long to wait before sending Telegram (to allow for better confidence)
-TELEGRAM_DELAY_SECONDS = 60*5
+#how long to wait before sending a notification
+NOTIFICATION_DELAY_SECONDS = 60*5
 
 #birdNET settings
 
