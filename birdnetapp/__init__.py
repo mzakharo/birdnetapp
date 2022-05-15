@@ -49,6 +49,8 @@ Count: {count}
 [Wikimedia](https://commons.wikimedia.org/w/index.php?search={linkname}&title=Special:MediaSearch&go=Go)'''
         if not dry:
             tb.send_audio(TELEGRAM_CHATID, audio, performer=sci_result, title=result, caption=caption)
+        else:
+            print('telegram', result, sci_result, caption)
 
 def send_telegram_delayed(delayed_telegrams,ts, res, delay=0, dry=False):
 
