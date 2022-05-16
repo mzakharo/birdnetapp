@@ -194,10 +194,10 @@ class MicStream():
         l, data = self.stream.read()
         if l == -32:
             raise Exception("Warning: Overflow occured")
-        elif l < 0:
+        elif l <= 0:
             raise Exception(f"Unknown error occured: {l}")
-        elif len(data) != self.chunk * self.channels * 2:
-            raise Exception(f"Warning: incorrect frame length: got {len(data)} expected {self.chunk * self.channels * 2}")
+        elif l != self.chunk:
+            raise Exception(f"Warning: incorrect frame length: got {l} expected {self.chunk}")
 
         return data
 
