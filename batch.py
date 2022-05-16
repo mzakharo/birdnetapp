@@ -12,7 +12,7 @@ for x in os.walk(sys.argv[1]):
         if f.endswith('.wav') or f.endswith('.mp3'):
             fname = os.path.join(x[0], f)
             MDATA['week'] = datetime.datetime.now().isocalendar()[1]
-            res = sendRequest(HOST, PORT,fname, json.dumps(MDATA), False)
+            res = sendRequest(HOST, PORT,fname, json.dumps(MDATA))
             rname, conf = res['results'][0]
             sci, rname = rname.split('_')
             print(name,fname, rname, conf)
