@@ -17,6 +17,12 @@ TELEGRAM_CHATID = '-XXXXX'
 INFLUX_URL = "http://host:PORT"
 INFLUX_TOKEN= "XXXXXX"
  ```
+ - setup `/tmp` as ramdisk:
+```
+sudo cp /usr/share/systemd/tmp.mount /etc/systemd/system/tmp.mount
+sudo systemctl enable tmp.mount
+sudo systemctl start tmp.mount
+```
  - Install dependencies via `pip3 install -r requirements.txt`
  - `sudo apt install sox ffmpeg`
  - run the server:  `cd /home/pi/BirdNET-Analyzer && python3 server.py`
