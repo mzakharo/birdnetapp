@@ -2,7 +2,7 @@
 
 #PS-Eye
 RATE = 48000
-CHANNELS = 2
+CHANNELS = 1
 CARD = 'Device'
 CHUNK = RATE * 1 # 1 second buffer
 
