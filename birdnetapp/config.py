@@ -1,9 +1,9 @@
 #Mic settings
 
 #PS-Eye
-RATE = 16000
-CHANNELS = 4
-CARD = 'CameraB409241'
+RATE = 48000
+CHANNELS = 2
+CARD = 'Device'
 CHUNK = RATE * 1 # 1 second buffer
 
 #Files saved here
@@ -13,7 +13,7 @@ SAVEDIR = '/home/pi/birdNet'
 KEEP_FILES = 300
 
 #whether store longterm results in wav or mp3
-EXPORT_FORMAT = '.wav'
+EXPORT_FORMAT = '.mp3'
 
 #how long to wait before sending a notification
 NOTIFICATION_DELAY_SECONDS = 60*5
