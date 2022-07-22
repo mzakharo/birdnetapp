@@ -1,9 +1,13 @@
 #Mic settings
 
-#PS-Eye
+#Audio Card sampling rate
 RATE = 48000
+#Number of channels to use
 CHANNELS = 1
+#Card name as it appears in Linux
 CARD = 'Device'
+
+#Default System parameter
 CHUNK = RATE * 1 # 1 second buffer
 
 #Files saved here
@@ -16,6 +20,8 @@ KEEP_FILES = 300
 EXPORT_FORMAT = '.mp3'
 
 #how long to wait before sending a notification
+#used to gather multiple recordings and choose the best
+# to send over telegram
 NOTIFICATION_DELAY_SECONDS = 60*5
 
 #birdNET settings
@@ -36,6 +42,7 @@ PORT = 8080
 ORG = "home"
 BUCKET = "main"
 
+#time window of how long the bird must be not seen to trigger re-detection
 SEEN_TIME = '14d'
 
 
