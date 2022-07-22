@@ -31,7 +31,7 @@ RuntimeMaxUse=64M
 ```
  - `sudo systemctl restart systemd-journald`
  - Install dependencies via `pip3 install -r requirements.txt`
- - `sudo apt install sox ffmpeg`
+ - `sudo apt install sox ffmpeg libasound-dev`
  - Run the server:  `cd /home/pi/BirdNET-Analyzer && python3 server.py`
  - Edit [config.py](https://github.com/mzakharo/birdnetapp/blob/main/birdnetapp/config.py) and adjust Microphone (`RATE`, `CARD`, `CHANNELS`), and birdnet (`LON`/`LAT`) settings
  - Run the app: `cd /home/pi/birdnetapp && python3 main.py`
