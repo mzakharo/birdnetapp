@@ -23,15 +23,15 @@ sudo cp /usr/share/systemd/tmp.mount /etc/systemd/system/tmp.mount
 sudo systemctl enable tmp.mount
 sudo systemctl start tmp.mount
 ```
- - disable rsyslog filliup up the SD card:  `sudo apt remove rsyslog`
+ - Disable rsyslog filliup up the SD card:  `sudo apt remove rsyslog`
  - Move journal to ram edit `/etc/systemd/journald.conf`:
  ```
  Storage=volatile
 RuntimeMaxUse=64M
 ```
  - `sudo systemctl restart systemd-journald`
+ - Install requirements via `sudo apt install sox ffmpeg libasound-dev`
  - Install dependencies via `pip3 install -r requirements.txt`
- - `sudo apt install sox ffmpeg libasound-dev`
  - Run the server:  `cd /home/pi/BirdNET-Analyzer && python3 server.py`
  - Edit [config.py](https://github.com/mzakharo/birdnetapp/blob/main/birdnetapp/config.py) and adjust Microphone (`RATE`, `CARD`, `CHANNELS`), and birdnet (`LON`/`LAT`) settings
  - Run the app: `cd /home/pi/birdnetapp && python3 main.py`
