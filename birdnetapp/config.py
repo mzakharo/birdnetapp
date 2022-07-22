@@ -4,7 +4,7 @@
 RATE = 48000
 #Number of channels to use
 CHANNELS = 1
-#Card name as it appears in Linux
+#Card name as it appears in alsamixer
 CARD = 'Device'
 
 #Default System parameter
