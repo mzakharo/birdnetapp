@@ -186,7 +186,7 @@ class MicStream():
 
     def open(self):
         cards = alsaaudio.cards()
-        _LOGGER.info(f"detected cards {cards} configuring: {self.card}")
+        _LOGGER.info(f"detected cards {cards} configuring: '{self.card}' from config.CARD")
         card_i = cards.index(self.card)
         self.stream = alsaaudio.PCM(alsaaudio.PCM_CAPTURE, channels=self.channels, format=alsaaudio.PCM_FORMAT_S16_LE, rate=self.rate, periodsize=self.chunk, cardindex=card_i)
 
