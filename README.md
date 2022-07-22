@@ -34,7 +34,7 @@ RuntimeMaxUse=64M
  - `sudo apt install sox ffmpeg`
  - run the server:  `cd /home/pi/BirdNET-Analyzer && python3 server.py`
  - Edit [config.py](https://github.com/mzakharo/birdnetapp/blob/main/birdnetapp/config.py) and adjust Microphone (`RATE`, `CARD`, `CHANNELS`), and birdnet (`LON`/`LAT`) settings
- - run the app: `cd /home/pi/birdnetapp && python3 main.py'
+ - run the app: `cd /home/pi/birdnetapp && python3 main.py`
  - Optional: install systemd services to run on startup `birdnet_main.service` and `birdnet_server.service`
 
 ## Tips
