@@ -4,7 +4,7 @@
 RATE = 48000
 #Number of channels to use
 CHANNELS = 2
-#Card name as it appears in alsamixer
+#Card name as it appears in 'arecord -l'
 CARD = 'PCH'
 
 #Default System parameter
