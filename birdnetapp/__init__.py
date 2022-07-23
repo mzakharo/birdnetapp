@@ -245,7 +245,7 @@ def runner(args, stream):
             _LOGGER.debug(f"{stride} {len(data)}")
 
             buf.append(data)
-            if stride == STRIDE_SECONDS:
+            if stride == args.stride_seconds:
                 stride = 0
                 if len(buf) != buf.maxlen:
                     continue
@@ -275,6 +275,7 @@ def main():
     parser.add_argument('--dry', action='store_true', help='do not upload to influx, send notifications')
     parser.add_argument('--debug', action='store_true', help='enable debug logs')
     parser.add_argument('--card', default=CARD, help='microphone card to look for')
+    parser.add_argument('--stride_seconds', default=STRIDE_SECONDS, help='buffer stride (in seconds) -> increase for RPi-3', type=int)
     parser.add_argument('--notification_delay', type=int, default=NOTIFICATION_DELAY_SECONDS, help='notificaiton delay')
     args = parser.parse_args()
 
