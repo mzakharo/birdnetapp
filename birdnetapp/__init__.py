@@ -189,6 +189,12 @@ class MicStream():
         _LOGGER.info(f"detected cards {cards} configuring: '{self.card}' from config.CARD")
         card_i = cards.index(self.card)
         self.stream = alsaaudio.PCM(alsaaudio.PCM_CAPTURE, channels=self.channels, format=alsaaudio.PCM_FORMAT_S16_LE, rate=self.rate, periodsize=self.chunk, cardindex=card_i)
+        got_rate = self.stream.setrate(self.rate)
+        if got_rate != self.rate:
+            raise ValueError(f"Card was configured with {self.rate}Hz but card returned {got_rate}Hz, adjust config.RATE accordingly. Card's supported rates: {self.stream.getrates()}")
+        channels = self.stream.setchannels(self.channels)
+        if channels != self.channels:
+            raise ValueError(f"Card was configured with {self.channels} channel(s) but card returned {channels} channel(s), adjust config.CHANNELS accordingly. Card's supported channels: {self.stream.getchannels()}")
 
     def read(self):
         l, data = self.stream.read()
