@@ -35,7 +35,7 @@ RuntimeMaxUse=64M
  - Run the server:  `cd /home/pi/BirdNET-Analyzer && python3 server.py`
  - Edit [config.py](https://github.com/mzakharo/birdnetapp/blob/main/birdnetapp/config.py) and adjust Microphone (`RATE`, `CARD`, `CHANNELS`), and birdnet (`LON`/`LAT`) settings
  - Run the app: `cd /home/pi/birdnetapp && python3 main.py`
- - NOTE: for raspberry Pi 3, the command is `python3 main.py --stride_seconds 4'
+ - NOTE: for raspberry Pi 3, the command is `python3 main.py --stride_seconds 4`
  - Optional: install systemd services to run on startup `birdnet_main.service` and `birdnet_server.service`
 
 ## Tips
