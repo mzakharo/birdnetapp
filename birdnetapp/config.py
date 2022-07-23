@@ -1,4 +1,7 @@
-#Mic settings
+from os import environ
+HOME = environ.get('HOME', '.')
+
+# Mic settings
 
 #Audio Card sampling rate
 RATE = 48000
@@ -11,7 +14,7 @@ CARD = 'PCH'
 CHUNK = RATE * 1 # 1 second buffer
 
 #Files saved here
-SAVEDIR = '/home/pi/birdNet'
+SAVEDIR = f'{HOME}/birdNet'
 
 #Number of most recent files to keep per bird
 KEEP_FILES = 300

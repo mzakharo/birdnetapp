@@ -4,6 +4,7 @@ librosa
 bottle
 
 #For this app
+pandas
 pyalsaaudio
 numpy
 scipy
