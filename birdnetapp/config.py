@@ -29,6 +29,7 @@ NOTIFICATION_DELAY_SECONDS = 60*5
 #Note: recording length has impact on conf_thresh
 #longer recording could lower CONF_THRESH to achieve the same detection rate
 RECORD_SECONDS = 6
+STRIDE_SECONDS = (RECORD_SECONDS) // 2
 CONF_TRHRESH = 0.55
 LAT=43.544811
 LON=-80.248108

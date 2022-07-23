@@ -130,7 +130,7 @@ def upload_result(ts, filename, savedir, res, min_confidence, dry=False, force_n
         query = f'''
                 import "influxdata/influxdb/schema"
                 schema.fieldKeys(
-                    bucket: "main",
+                    bucket: "{BUCKET}",
                     predicate: (r) => r["_measurement"] == "birdnet",
                     start: -{SEEN_TIME},
                 )'''
@@ -212,6 +212,7 @@ class MicStream():
         self.close()
 
 def process(args, ts, data, mdata):
+    tic = time.time()
     mdata['week'] = ts.isocalendar()[1]
     data = np.frombuffer(data, dtype=np.int16)
     data = data.reshape((-1, CHANNELS))
@@ -219,7 +220,9 @@ def process(args, ts, data, mdata):
         fname = tmp.name
         scipy.io.wavfile.write(fname, RATE, data)
         res = sendRequest(HOST, PORT, fname, json.dumps(mdata))
-        return upload_result(ts, fname, SAVEDIR, res, args.min_confidence, args.dry)
+        up = upload_result(ts, fname, SAVEDIR, res, args.min_confidence, args.dry)
+        _LOGGER.debug(f'proces took: {time.time() - tic} seconds')
+        return up
 
 
 def runner(args, stream):
@@ -231,6 +234,7 @@ def runner(args, stream):
 
     _LOGGER.info("started")
     with ThreadPoolExecutor(max_workers=1) as exc:
+        first_run = True
         while True:
             try:
                 data = stream.read()
@@ -241,14 +245,21 @@ def runner(args, stream):
             _LOGGER.debug(f"{stride} {len(data)}")
 
             buf.append(data)
-            if stride == RECORD_SECONDS//2:
+            if stride == STRIDE_SECONDS:
                 stride = 0
                 if len(buf) != buf.maxlen:
                     continue
                 data = b''.join(buf)
 
                 ts = datetime.datetime.now().replace(microsecond=0)
-                futures.append(exc.submit(process, args, ts,  data, MDATA))
+
+                #issue with birdnetAnalyzer taking a long time to process first request
+                if first_run:
+                    first_run = False
+                    process(args, ts,  data, MDATA)
+                else:
+                    futures.append(exc.submit(process, args, ts,  data, MDATA))
+                _LOGGER.debug(f'futures={len(futures)}')
                 assert len(futures) < 10 , "Processing not keeping up with incoming data"
                 for f in futures:
                     if f.done():
