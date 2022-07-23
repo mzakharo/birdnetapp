@@ -189,6 +189,12 @@ class MicStream():
         _LOGGER.info(f"detected cards {cards} configuring: '{self.card}' from config.CARD")
         card_i = cards.index(self.card)
         self.stream = alsaaudio.PCM(alsaaudio.PCM_CAPTURE, channels=self.channels, format=alsaaudio.PCM_FORMAT_S16_LE, rate=self.rate, periodsize=self.chunk, cardindex=card_i)
+        got_rate = self.stream.setrate(self.rate)
+        if got_rate != self.rate:
+            raise ValueError(f"Card was configured with {self.rate}Hz but card returned {got_rate}Hz, adjust config.RATE accordingly. Card's supported rates: {self.stream.getrates()}")
+        channels = self.stream.setchannels(self.channels)
+        if channels != self.channels:
+            raise ValueError(f"Card was configured with {self.channels} channel(s) but card returned {channels} channel(s), adjust config.CHANNELS accordingly. Card's supported channels: {self.stream.getchannels()}")
 
     def read(self):
         l, data = self.stream.read()
@@ -224,50 +230,55 @@ def process(args, ts, data, mdata):
         _LOGGER.debug(f'proces took: {time.time() - tic} seconds')
         return up
 
+def work(args, stream, exc, futures):
+    first_run = True
+    stride = 0
+    buf = deque(maxlen=RECORD_SECONDS)
+    delayed_notifications = {}
+    _LOGGER.info("started")
+    while True:
+        try:
+            data = stream.read()
+        except Exception as e:
+            _LOGGER.warning(e)
+            continue
+        stride += 1
+        _LOGGER.debug(f"{stride} {len(data)}")
+
+        buf.append(data)
+        if stride == args.stride_seconds:
+            stride = 0
+            if len(buf) != buf.maxlen:
+                continue
+            data = b''.join(buf)
+
+            ts = datetime.datetime.now().replace(microsecond=0)
+
+            #work-around for the issue with birdNETAnalyzer server taking a long time to process the first request
+            if first_run:
+                first_run = False
+                process(args, ts,  data, MDATA) #ignores the result
+            else:
+                futures.append(exc.submit(process, args, ts,  data, MDATA))
+            _LOGGER.debug(f'futures={len(futures)}')
+            assert len(futures) < 10 , "Processing not keeping up with incoming data"
+            for f in futures:
+                if f.done():
+                    res = f.result()
+                    futures.remove(f)
+                    msg = send_notification_delayed(delayed_notifications,ts, res, delay=args.notification_delay, dry=args.dry)
+                    if msg is not None:
+                        futures.append(exc.submit(send_telegram, msg, args.dry))
+
 
 def runner(args, stream):
-    buf = deque(maxlen=RECORD_SECONDS)
-    stride = 0
     futures = []
-
-    delayed_notifications = {}
-
-    _LOGGER.info("started")
     with ThreadPoolExecutor(max_workers=1) as exc:
-        first_run = True
-        while True:
-            try:
-                data = stream.read()
-            except Exception as e:
-                _LOGGER.warning(e)
-                continue
-            stride += 1
-            _LOGGER.debug(f"{stride} {len(data)}")
-
-            buf.append(data)
-            if stride == args.stride_seconds:
-                stride = 0
-                if len(buf) != buf.maxlen:
-                    continue
-                data = b''.join(buf)
-
-                ts = datetime.datetime.now().replace(microsecond=0)
-
-                #issue with birdnetAnalyzer taking a long time to process first request
-                if first_run:
-                    first_run = False
-                    process(args, ts,  data, MDATA)
-                else:
-                    futures.append(exc.submit(process, args, ts,  data, MDATA))
-                _LOGGER.debug(f'futures={len(futures)}')
-                assert len(futures) < 10 , "Processing not keeping up with incoming data"
-                for f in futures:
-                    if f.done():
-                        res = f.result()
-                        futures.remove(f)
-                        msg = send_notification_delayed(delayed_notifications,ts, res, delay=args.notification_delay, dry=args.dry)
-                        if msg is not None:
-                            futures.append(exc.submit(send_telegram, msg, args.dry))
+        try:
+            work(args, stream, exc, futures)
+        finally:
+            for future in futures:
+                future.cancel()
 
 def main():
     parser = argparse.ArgumentParser()
