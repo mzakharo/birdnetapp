@@ -100,11 +100,6 @@ def upload_result(ts, filename, savedir, res, min_confidence, dry=False, force_n
 
         dir_path = os.path.join(savedir, result)
 
-        if not os.path.exists(dir_path):
-            os.makedirs(dir_path)
-
-        cleanup(dir_path, KEEP_FILES) #avoid running out of storage
-
         date_time = ts.strftime("%y-%m-%d_%H-%M-%S")
         export_filename = os.path.join(dir_path, date_time + EXPORT_FORMAT) 
         export_spec = os.path.join(dir_path, date_time + '.png') 
@@ -115,6 +110,10 @@ def upload_result(ts, filename, savedir, res, min_confidence, dry=False, force_n
         meta['results'] = results
 
         _LOGGER.info(f"{result} {export_filename} conf: {conf}")
+
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path)
+        cleanup(dir_path, KEEP_FILES) #avoid running out of storage
 
         if export_filename.endswith('.mp3'):
             AudioSegment.from_wav(filename).export(export_filename, format="mp3", parameters=["-ac", "1", "-vol", "150", "-q:a",  "9"])
