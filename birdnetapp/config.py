@@ -3,9 +3,9 @@
 #Audio Card sampling rate
 RATE = 48000
 #Number of channels to use
-CHANNELS = 1
+CHANNELS = 2
 #Card name as it appears in alsamixer
-CARD = 'Device'
+CARD = 'PCH'
 
 #Default System parameter
 CHUNK = RATE * 1 # 1 second buffer
