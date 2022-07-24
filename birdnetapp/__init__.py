@@ -286,6 +286,8 @@ def main():
     parser.add_argument('--dry', action='store_true', help='do not upload to influx, send notifications')
     parser.add_argument('--debug', action='store_true', help='enable debug logs')
     parser.add_argument('--card', default=CARD, help='microphone card to look for')
+    parser.add_argument('--channels', default=CHANNELS, type=int, help='microphone number of channels')
+    parser.add_argument('--rate', default=RATE, type=int, help='microphone sampling rate (Hz)')
     parser.add_argument('--stride_seconds', default=STRIDE_SECONDS, help='buffer stride (in seconds) -> increase for RPi-3', type=int)
     parser.add_argument('--notification_delay', type=int, default=NOTIFICATION_DELAY_SECONDS, help='notificaiton delay')
     args = parser.parse_args()
@@ -295,7 +297,7 @@ def main():
     else:
         logging.basicConfig(level=logging.INFO)
 
-    stream = MicStream(RATE, CHANNELS, CHUNK, args.card)
+    stream = MicStream(args.rate, args.channels, CHUNK, args.card)
     stream.open()
     try:
         runner(args, stream)
