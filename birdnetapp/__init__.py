@@ -185,7 +185,7 @@ class MicStream():
 
     def open(self):
         cards = alsaaudio.cards()
-        _LOGGER.info(f"detected cards {cards} configuring: '{self.card}' from config.CARD")
+        _LOGGER.info(f"Detected cards {cards} configuring: '{self.card}' from config.CARD")
         card_i = cards.index(self.card)
         self.stream = alsaaudio.PCM(alsaaudio.PCM_CAPTURE, channels=self.channels, format=alsaaudio.PCM_FORMAT_S16_LE, rate=self.rate, periodsize=self.chunk, cardindex=card_i)
         got_rate = self.stream.setrate(self.rate)
@@ -230,11 +230,19 @@ def process(args, ts, data, mdata):
         return up
 
 def work(args, stream, exc, futures):
-    first_run = True
     stride = 0
     buf = deque(maxlen=RECORD_SECONDS)
     delayed_notifications = {}
-    _LOGGER.info("started")
+
+    #birdNet Analyzer can have a very large first-time prediction delay. 
+    #Avoid real-time sensitive code by sending a dummy processing message
+    _LOGGER.info(f'Sending dummy message to birdNetAnalyzer....')
+    ts = datetime.datetime.now()
+    data = bytearray(buf.maxlen * 2 * stream.channels * stream.chunk)
+    process(args, ts, data, MDATA)
+    end = datetime.datetime.now()
+    _LOGGER.info(f'Initial birdNetAnalyzer process took {end - ts}')
+    _LOGGER.info("Started")
     while True:
         try:
             data = stream.read()
@@ -250,15 +258,8 @@ def work(args, stream, exc, futures):
             if len(buf) != buf.maxlen:
                 continue
             data = b''.join(buf)
-
             ts = datetime.datetime.now().replace(microsecond=0)
-
-            #work-around for the issue with birdNETAnalyzer server taking a long time to process the first request
-            if first_run:
-                first_run = False
-                process(args, ts,  data, MDATA) #ignores the result
-            else:
-                futures.append(exc.submit(process, args, ts,  data, MDATA))
+            futures.append(exc.submit(process, args, ts,  data, MDATA))
             _LOGGER.debug(f'futures={len(futures)}')
             assert len(futures) < 10 , "Processing not keeping up with incoming data"
             for f in futures:
