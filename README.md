@@ -41,5 +41,7 @@ RuntimeMaxUse=64M
 ## Tips
  -  Default influx bucket is `main`, org `home`. Change this with `ORG` and `BUCKET` variables in [config.py](https://github.com/mzakharo/birdnetapp/blob/main/birdnetapp/config.py)
  - Telegram notification cooldown is controlled by `SEEN_TIME` variable in [config.py](https://github.com/mzakharo/birdnetapp/blob/main/birdnetapp/config.py). If a bird has been seen within this time window, it will not trigger notificaitons
+ - Telegram messages are sent after the bird stops tweeting and `NOTIFICATION_DELAY_SECONDS` elapses (from [config.py](https://github.com/mzakharo/birdnetapp/blob/main/birdnetapp/config.py)).  This allows for the 'best' recording to be sent, not the first.
+ - To test telegram capability in isolation, run `PYTHONPATH=. python3 tests/test_telegram.py`
  - Default recording save directory is specified in [config.py](https://github.com/mzakharo/birdnetapp/blob/main/birdnetapp/config.py), `SAVEDIR` variable
  - User can expose `SEVEDIR` directory over web broser through `birdnet_browser.service`
