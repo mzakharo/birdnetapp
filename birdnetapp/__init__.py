@@ -236,12 +236,12 @@ def work(args, stream, exc, futures):
 
     #birdNet Analyzer can have a very large first-time prediction delay. 
     #Avoid real-time sensitive code by sending a dummy processing message
-    _LOGGER.info(f'Sending dummy message to birdNetAnalyzer....')
+    _LOGGER.info(f'Sending a dummy message to BirdNETAnalyzer....')
     ts = datetime.datetime.now()
     data = bytearray(buf.maxlen * 2 * stream.channels * stream.chunk)
     process(args, ts, data, MDATA)
     end = datetime.datetime.now()
-    _LOGGER.info(f'Initial birdNetAnalyzer process took {end - ts}')
+    _LOGGER.info(f'Initial BirdNETAnalyzer process took {end - ts}')
     _LOGGER.info("Started")
     while True:
         try:
