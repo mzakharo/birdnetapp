@@ -109,7 +109,7 @@ def upload_result(ts, filename, savedir, res, min_confidence, dry=False, force_n
         meta['conf'] = conf
         meta['results'] = results
 
-        _LOGGER.info(f"{result} {export_filename} conf: {conf}")
+        _LOGGER.debug(f"{result} {export_filename} conf: {conf}")
 
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
@@ -140,6 +140,7 @@ def upload_result(ts, filename, savedir, res, min_confidence, dry=False, force_n
         notify = not seen or force_notify
 
         out = {'fname' : export_filename,'sci' :  sci_result, 'name' : result, 'conf' : conf, 'notify' : notify}
+        _LOGGER.info(out)
 
         if not dry:
             ts_utc = datetime.datetime.utcfromtimestamp(ts.timestamp())
