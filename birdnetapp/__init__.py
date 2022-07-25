@@ -254,22 +254,22 @@ def work(args, stream, exc, futures):
         _LOGGER.debug(f"{stride} {len(data)}")
 
         buf.append(data)
-        if stride == args.stride_seconds:
-            stride = 0
+        if stride >= args.stride_seconds:
             if len(buf) != buf.maxlen:
                 continue
+            stride = 0
             data = b''.join(buf)
             ts = datetime.datetime.now().replace(microsecond=0)
             futures.append(exc.submit(process, args, ts,  data, MDATA))
             _LOGGER.debug(f'futures={len(futures)}')
             assert len(futures) < 10 , "Processing not keeping up with incoming data"
-            for f in futures:
-                if f.done():
-                    res = f.result()
-                    futures.remove(f)
-                    msg = send_notification_delayed(delayed_notifications,ts, res, delay=args.notification_delay, dry=args.dry)
-                    if msg is not None:
-                        futures.append(exc.submit(send_telegram, msg, args.dry))
+        for f in futures:
+            if f.done():
+                res = f.result()
+                futures.remove(f)
+                msg = send_notification_delayed(delayed_notifications,ts, res, delay=args.notification_delay, dry=args.dry)
+                if msg is not None:
+                    futures.append(exc.submit(send_telegram, msg, args.dry))
 
 
 def runner(args, stream):

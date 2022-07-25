@@ -29,7 +29,19 @@ def test1():
     msg['conf'] = 0.1 #lower confidence, should increment count, ts
     out = send_notification_delayed(delayed_notifications, ts, deepcopy(msg), 1, dry=DRY)
     assert len(delayed_notifications) == 1
+    n = delayed_notifications['Northern Cardinal']
+    assert n['conf'] == 0.5
     assert out is None
+
+    ts += datetime.timedelta(seconds=1)
+    msg['conf'] = 0.99 #higher confidence, should increment count, ts
+    out = send_notification_delayed(delayed_notifications, ts, deepcopy(msg), 1, dry=DRY)
+    assert len(delayed_notifications) == 1
+    n = delayed_notifications['Northern Cardinal']
+    assert n['conf'] == 0.99
+    assert out is None
+
+
 
     # send message
     ts += datetime.timedelta(seconds=1)
