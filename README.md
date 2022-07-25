@@ -11,8 +11,8 @@ BirdNET App for raspberry Pi 3/4+ that saves bird sightings to Influx2, alerts o
  - Clone this repository to `/home/pi`
  - In  the `birdnetapp/birdnetapp` folder, create a `secrets.py` with the following contents: 
  ```
-TELEGRAM_TOKEN = 'blah'
-TELEGRAM_CHATID = 'XXXXX'
+TELEGRAM_TOKEN = 'from_botfather'
+TELEGRAM_CHATID = '#######'
 
 INFLUX_URL = "http://host:PORT"
 INFLUX_TOKEN= "XXXXXX"
