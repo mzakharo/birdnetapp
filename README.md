@@ -39,10 +39,17 @@ RuntimeMaxUse=64M
  - Run the app: `cd /home/pi/birdnetapp && python3 main.py`
  - NOTE: for raspberry Pi 3, the command is `python3 main.py --stride_seconds 5`
  - Optional: install systemd services to run on startup `birdnet_main.service` and `birdnet_server.service`
+  ```
+sudo cp birdnet_server.service  /lib/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable birdnet_server.service 
+sudo systemctl start birdnet_server.service 
+sudo systemctl status birdnet_server.service 
+  ```
 
 ## Tips
- - Telegram notification cooldown is controlled by `SEEN_TIME` variable in [config.py](https://github.com/mzakharo/birdnetapp/blob/main/birdnetapp/config.py). If a bird has been seen within this time window, it will not trigger notificaitons
- - Telegram messages are sent after the bird stops tweeting and `NOTIFICATION_DELAY_SECONDS` elapses (from [config.py](https://github.com/mzakharo/birdnetapp/blob/main/birdnetapp/config.py)).  This allows for the 'best' recording to be sent, not the first.
+ - Telegram notification cooldown is controlled by `SEEN_TIME` variable in [config.py](https://github.com/mzakharo/birdnetapp/blob/main/birdnetapp/config.py). If a bird has already been seen within this time window, it will not trigger Telegram notificaitons
+ - Telegram messages are sent after a configurable delay, after the bird stops tweeting and `NOTIFICATION_DELAY_SECONDS` elapses (from [config.py](https://github.com/mzakharo/birdnetapp/blob/main/birdnetapp/config.py)). This ensures the 'best' recording is notified with , not the first.
  - To test Telegram capability in isolation, run `PYTHONPATH=. python3 tests/test_telegram.py`
  - Default recording save directory is specified in [config.py](https://github.com/mzakharo/birdnetapp/blob/main/birdnetapp/config.py), `SAVEDIR` variable
  - User can expose `SEVEDIR` directory over web broser through `birdnet_browser.service`
