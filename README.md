@@ -58,3 +58,13 @@ sudo systemctl status birdnet_server.service
  - To test Telegram capability in isolation, run `PYTHONPATH=. python3 tests/test_telegram.py`
  - Default recording save directory is specified in [config.py](https://github.com/mzakharo/birdnetapp/blob/main/birdnetapp/config.py), `SAVEDIR` variable
  - User can expose `SEVEDIR` directory over web broser through `birdnet_browser.service`
+ 
+ ## Run Tests
+  - Install test framework
+  ```
+  pip3 install tox
+  ```
+  - Run unit tests
+   ```
+   tox
+   ```
