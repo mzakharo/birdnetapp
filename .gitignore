@@ -2,3 +2,6 @@
 *.swo
 secrets.py
 __pycache__
+/.coverage
+/.tox
+/MANIFEST
