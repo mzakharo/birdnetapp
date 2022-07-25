@@ -2,7 +2,7 @@
 BirdNET App for raspberry Pi 3/4+ that saves bird sightings to Influx2, alerts over Telegram
 
 ## Assumptions
- - User has access to an InfluxDB2 instance (you can get a free one at [influxdata.com](https://cloud2.influxdata.com/signup)
+ - User has access to an InfluxDB2 instance (you can get a free one at [influxdata.com](https://cloud2.influxdata.com/signup))
  - User has a telegram bot token and a chat id [Instructions](https://nocodeapi.com/telegram-bot-with-nocode-and-get-notifications)
 
 ## Installation
