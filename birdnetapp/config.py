@@ -42,10 +42,6 @@ OVERLAP = 0
 HOST='127.0.0.1'
 PORT = 8080
 
-#influx
-ORG = "home"
-BUCKET = "main"
-
 #time window of how long the bird must be not seen to trigger re-detection
 SEEN_TIME = '14d'
 

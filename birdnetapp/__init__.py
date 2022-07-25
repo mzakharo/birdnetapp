@@ -19,13 +19,13 @@ from pydub import AudioSegment
 import subprocess
 import logging
 
-from .secrets import TELEGRAM_TOKEN, TELEGRAM_CHATID, INFLUX_URL, INFLUX_TOKEN
+from .secrets import TELEGRAM_TOKEN, TELEGRAM_CHATID, INFLUX_URL, INFLUX_TOKEN, INFLUX_BUCKET, INFLUX_ORG
 from .config import *
 from .clean import cleanup
 
 _LOGGER = logging.getLogger(__name__)
 
-influx_client = InfluxDBClient(url=INFLUX_URL, token=INFLUX_TOKEN, org=ORG)
+influx_client = InfluxDBClient(url=INFLUX_URL, token=INFLUX_TOKEN, org=INFLUX_ORG)
 write_api = influx_client.write_api(write_options=SYNCHRONOUS)
 query_api = influx_client.query_api()
 
@@ -129,7 +129,7 @@ def upload_result(ts, filename, savedir, res, min_confidence, dry=False, force_n
         query = f'''
                 import "influxdata/influxdb/schema"
                 schema.fieldKeys(
-                    bucket: "{BUCKET}",
+                    bucket: "{INFLUX_BUCKET}",
                     predicate: (r) => r["_measurement"] == "birdnet",
                     start: -{SEEN_TIME},
                 )'''
@@ -147,7 +147,7 @@ def upload_result(ts, filename, savedir, res, min_confidence, dry=False, force_n
             point = Point("birdnet") \
                   .field(result, conf) \
                   .time(ts_utc, WritePrecision.NS)
-            write_api.write(BUCKET, ORG, point)
+            write_api.write(INFLUX_BUCKET, INFLUX_ORG, point)
 
     return out
 

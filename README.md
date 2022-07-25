@@ -2,8 +2,8 @@
 BirdNET App for raspberry Pi 3/4+ that saves bird sightings to Influx, alerts over Telegram
 
 ## Assumptions
- - User has access to an InfluxDB instance
- - User has a telegram bot token and a chat id
+ - User has access to an InfluxDB instance (you can get a free one at [influxdata.com](https://cloud2.influxdata.com/signup)
+ - User has a telegram bot token and a chat id [Instructions](https://nocodeapi.com/telegram-bot-with-nocode-and-get-notifications)
 
 ## Installation
  - Clone BirdNet-Analyzer repository https://github.com/kahst/BirdNET-Analyzer.git  to `/home/pi`
@@ -12,10 +12,12 @@ BirdNET App for raspberry Pi 3/4+ that saves bird sightings to Influx, alerts ov
  - In  the `birdnetapp/birdnetapp` folder, create a `secrets.py` with the following contents: 
  ```
 TELEGRAM_TOKEN = 'blah'
-TELEGRAM_CHATID = '-XXXXX'
+TELEGRAM_CHATID = 'XXXXX'
 
 INFLUX_URL = "http://host:PORT"
 INFLUX_TOKEN= "XXXXXX"
+INFLUX_ORG = "my_org"
+INFLUX_BUCKET = "my_bucket"
  ```
  - setup `/tmp` as ramdisk:
 ```
@@ -39,9 +41,8 @@ RuntimeMaxUse=64M
  - Optional: install systemd services to run on startup `birdnet_main.service` and `birdnet_server.service`
 
 ## Tips
- -  Default influx bucket is `main`, org `home`. Change this with `ORG` and `BUCKET` variables in [config.py](https://github.com/mzakharo/birdnetapp/blob/main/birdnetapp/config.py)
  - Telegram notification cooldown is controlled by `SEEN_TIME` variable in [config.py](https://github.com/mzakharo/birdnetapp/blob/main/birdnetapp/config.py). If a bird has been seen within this time window, it will not trigger notificaitons
  - Telegram messages are sent after the bird stops tweeting and `NOTIFICATION_DELAY_SECONDS` elapses (from [config.py](https://github.com/mzakharo/birdnetapp/blob/main/birdnetapp/config.py)).  This allows for the 'best' recording to be sent, not the first.
- - To test telegram capability in isolation, run `PYTHONPATH=. python3 tests/test_telegram.py`
+ - To test Telegram capability in isolation, run `PYTHONPATH=. python3 tests/test_telegram.py`
  - Default recording save directory is specified in [config.py](https://github.com/mzakharo/birdnetapp/blob/main/birdnetapp/config.py), `SAVEDIR` variable
  - User can expose `SEVEDIR` directory over web broser through `birdnet_browser.service`
