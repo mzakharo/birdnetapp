@@ -6,9 +6,14 @@ BirdNET App for raspberry Pi 3/4+ that saves bird sightings to Influx2, alerts o
  - User has a telegram [bot token](https://www.thewindowsclub.com/how-to-create-a-simple-telegram-bot) and a [chat id](https://stackoverflow.com/questions/32423837/telegram-bot-how-to-get-a-group-chat-id)
 
 ## Installation
- - Clone BirdNet-Analyzer repository https://github.com/kahst/BirdNET-Analyzer.git  to `/home/pi`
- - Follow BirdNet-Analyzer [README](https://github.com/kahst/BirdNET-Analyzer#setup-ubuntu) instructions for Ubuntu/Linux.
+ - Clone BirdNet-Analyzer repository  to `/home/pi`
+ ```
+ git clone https://github.com/kahst/BirdNET-Analyzer.git
+ ```
  - Clone this repository to `/home/pi`
+ ```
+ git clone https://github.com/mzakharo/birdnetapp.git
+ ```
  - In  the `birdnetapp/birdnetapp` folder, create a `secrets.py` with the following contents: 
  ```
 TELEGRAM_TOKEN = 'from_botfather'
