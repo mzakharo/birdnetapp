@@ -1,4 +1,4 @@
-from birdnetapp import send_telegram
+from birdnetapp.app import send_telegram
 from pydub import AudioSegment
 
 def test1(dry=True):
