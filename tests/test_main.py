@@ -21,6 +21,7 @@ class Args:pass
 class MocStream:
     channels = 2
     periodsize = 48000
+    rate = 48000
 
 
 class DummyExecutor(Executor):

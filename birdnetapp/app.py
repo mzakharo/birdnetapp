@@ -197,10 +197,10 @@ class Worker:
         tic = time.time()
         mdata['week'] = ts.isocalendar()[1]
         data = np.frombuffer(data, dtype=np.int16)
-        data = data.reshape((-1, CHANNELS))
+        data = data.reshape((-1, self.stream.channels))
         with tempfile.NamedTemporaryFile(suffix='.wav') as tmp:
             fname = tmp.name
-            scipy.io.wavfile.write(fname, RATE, data)
+            scipy.io.wavfile.write(fname, self.stream.rate, data)
             res = self.sendRequest(HOST, PORT, fname, json.dumps(mdata))
             up = self.upload_result(ts, fname, SAVEDIR, res)
             _LOGGER.debug(f'proces took: {time.time() - tic} seconds')
