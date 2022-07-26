@@ -38,7 +38,6 @@ def get_parser():
     parser.add_argument('--card', default=CARD, help='microphone card to look for')
     parser.add_argument('--channels', default=CHANNELS, type=int, help='microphone number of channels')
     parser.add_argument('--rate', default=RATE, type=int, help='microphone sampling rate (Hz)')
-    parser.add_argument('--chunk', default=CHUNK, type=int, help='microphone sampling chunk size')
     parser.add_argument('--stride_seconds', default=STRIDE_SECONDS, help='buffer stride (in seconds) -> increase for RPi-3', type=int)
     parser.add_argument('--notification_delay', type=int, default=NOTIFICATION_DELAY_SECONDS, help='notificaiton delay')
     return parser
@@ -65,7 +64,7 @@ Count: {count}
         else:
             _LOGGER.info(f'telegram {result} {sci_result} {caption}')
 
-def send_notification_delayed(delayed_notifications,ts, res, delay=0):
+def send_notification_delayed(delayed_notifications, ts, res, delay=0):
 
     #store most confident result, along with detection count
     if res is not None:
@@ -212,7 +211,7 @@ class Worker:
         #Avoid real-time sensitive code by sending a dummy processing message
         _LOGGER.info(f'Sending a dummy message to BirdNETAnalyzer....')
         ts = datetime.datetime.now()
-        data = bytearray(self.buf.maxlen * 2 * self.stream.channels * self.stream.chunk)
+        data = bytearray(self.buf.maxlen * 2 * self.stream.channels * self.stream.periodsize)
         self.process(ts, data, MDATA)
         end = datetime.datetime.now()
         _LOGGER.info(f'Initial BirdNETAnalyzer process took {end - ts}')

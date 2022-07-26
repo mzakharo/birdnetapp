@@ -10,9 +10,6 @@ CHANNELS = 2
 #Card name as it appears in 'arecord -l'
 CARD = 'PCH'
 
-#Default System parameter
-CHUNK = RATE * 1 # 1 second buffer
-
 #Files saved here
 SAVEDIR = f'{HOME}/birdNet'
 
@@ -42,7 +39,6 @@ OVERLAP = 0
 HOST='127.0.0.1'
 PORT = 8080
 
-#time window of how long the bird must be not seen to trigger re-detection
+#time window of how long the bird must be not seen to trigger a telegram
 SEEN_TIME = '14d'
-
 

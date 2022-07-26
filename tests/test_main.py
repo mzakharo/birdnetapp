@@ -20,7 +20,7 @@ class Args:pass
 
 class MocStream:
     channels = 2
-    chunk = 48000
+    periodsize = 48000
 
 
 class DummyExecutor(Executor):
@@ -70,8 +70,12 @@ def test1():
     
     #test not sending notification if the bird already exists
     q.data = ['Northern Cardinal']
-    msg2 = w.upload_result(ts, FILENAME, SAVEDIR, res)
-    assert msg2['notify'] == False
+    msg_mute = w.upload_result(ts, FILENAME, SAVEDIR, res)
+    assert msg_mute['notify'] == False
+
+    out = send_notification_delayed(delayed_notifications, ts, deepcopy(msg_mute), 0)
+    assert len(delayed_notifications) == 0
+    assert out is None
 
     args.min_confidence = 1
     msg2 = w.upload_result(ts, FILENAME, SAVEDIR, res)
@@ -91,22 +95,22 @@ def test1():
 
     #update but not send
     ts += datetime.timedelta(seconds=1)
-    out = send_notification_delayed(delayed_notifications, ts, deepcopy(msg), 1)
+    out = send_notification_delayed(delayed_notifications, ts, deepcopy(msg_mute), 1)
     assert len(delayed_notifications) == 1
     assert out is None
 
     #update lower conf but not send
     ts += datetime.timedelta(seconds=1)
-    msg['conf'] = 0.1 #lower confidence, should increment count, ts
-    out = send_notification_delayed(delayed_notifications, ts, deepcopy(msg), 1)
+    msg_mute['conf'] = 0.1 #lower confidence, should increment count, ts
+    out = send_notification_delayed(delayed_notifications, ts, deepcopy(msg_mute), 1)
     assert len(delayed_notifications) == 1
     n = delayed_notifications['Northern Cardinal']
     assert n['conf'] == 0.5
     assert out is None
 
     ts += datetime.timedelta(seconds=1)
-    msg['conf'] = 0.99 #higher confidence, should increment count, ts
-    out = send_notification_delayed(delayed_notifications, ts, deepcopy(msg), 1)
+    msg_mute['conf'] = 0.99 #higher confidence, should increment count, ts
+    out = send_notification_delayed(delayed_notifications, ts, deepcopy(msg_mute), 1)
     assert len(delayed_notifications) == 1
     n = delayed_notifications['Northern Cardinal']
     assert n['conf'] == 0.99

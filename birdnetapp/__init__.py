@@ -11,9 +11,9 @@ from .app import Worker, get_parser
 _LOGGER = logging.getLogger(__name__)
 
 class MicStream():
-    def __init__(self, rate, channels, chunk, card):
+    def __init__(self, rate, channels, periodsize, card):
         self.rate = rate
-        self.chunk = chunk
+        self.periodsize = periodsize
         self.card = card
         self.stream = None
         self.channels = channels
@@ -22,7 +22,7 @@ class MicStream():
         cards = alsaaudio.cards()
         _LOGGER.info(f"Detected cards {cards} configuring: '{self.card}' from config.CARD")
         card_i = cards.index(self.card)
-        self.stream = alsaaudio.PCM(alsaaudio.PCM_CAPTURE, channels=self.channels, format=alsaaudio.PCM_FORMAT_S16_LE, rate=self.rate, periodsize=self.chunk, cardindex=card_i)
+        self.stream = alsaaudio.PCM(alsaaudio.PCM_CAPTURE, channels=self.channels, format=alsaaudio.PCM_FORMAT_S16_LE, rate=self.rate, periodsize=self.periodsize, cardindex=card_i)
         got_rate = self.stream.setrate(self.rate)
         if got_rate != self.rate:
             raise ValueError(f"Card was configured with {self.rate}Hz but card returned {got_rate}Hz, adjust config.RATE accordingly. Card's supported rates: {self.stream.getrates()}")
@@ -37,8 +37,8 @@ class MicStream():
             raise Exception("Warning: Overflow occured")
         elif l <= 0:
             raise Exception(f"Unknown error occured: {l}")
-        elif l != self.chunk:
-            raise Exception(f"Warning: incorrect frame length: got {l} expected {self.chunk}")
+        elif l != self.periodsize:
+            raise Exception(f"Warning: incorrect frame length: got {l} expected {self.periodsize}")
         elif len(data) !=  exp:
             raise Exception(f"Warning: incorrect frame length: got {len(data)} expected {exp}")
 
@@ -81,7 +81,7 @@ def main():
     else:
         logging.basicConfig(level=logging.INFO)
 
-    stream = MicStream(args.rate, args.channels, args.chunk, args.card)
+    stream = MicStream(args.rate, args.channels, args.rate, args.card)
     stream.open()
     try:
         runner(args, stream)
