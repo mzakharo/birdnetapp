@@ -92,7 +92,7 @@ def send_notification_delayed(delayed_notifications,ts, res, delay=0):
 
             
 
-def sendRequest(host, port, fpath, mdata):
+def sendRequest(host, port, fpath, mdata): # pragma: no cover
     url = 'http://{}:{}/analyze'.format(host, port)
 
     start_time = time.time()

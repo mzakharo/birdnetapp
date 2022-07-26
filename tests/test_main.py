@@ -57,7 +57,7 @@ def test1():
     args.min_confidence = 0
     args.dry = False
 
-    w = Worker(args, "", "", q, q)
+    w = Worker(args, None, None, q, q)
 
     FILENAME = 'example/cardinal.wav'
     SAVEDIR = '/tmp/birdnetapp_test'
@@ -117,6 +117,7 @@ def test1():
     out = send_notification_delayed(delayed_notifications, ts, None, 1)
     assert len(delayed_notifications) == 0
     assert out is not None
+    assert out['count'] == 4
     so = send_telegram(out, dry=True)
     assert so is None
 
@@ -135,7 +136,15 @@ def test_worker():
     ts = datetime.datetime.now().replace(microsecond=0)
     data = bytearray(48000)
 
+    #process data until telegram message is queued
     while  (msg := w.work(ts, data)) is None: pass
     assert 'Cardinal' in msg['name']
+
+    #make sure there is a pending telegram
+    assert len(w.futures)
+
+    #send the pending telegram
+    while w.futures:
+        w.work(ts, data)
 
 
