@@ -24,19 +24,24 @@ INFLUX_TOKEN= "XXXXXX"
 INFLUX_ORG = "my_org"
 INFLUX_BUCKET = "my_bucket"
  ```
+ 
+ ### Optional: reduce SD card wear
  - setup `/tmp` as ramdisk:
 ```
 sudo cp /usr/share/systemd/tmp.mount /etc/systemd/system/tmp.mount
 sudo systemctl enable tmp.mount
 sudo systemctl start tmp.mount
 ```
- - Disable rsyslog filliup up the SD card:  `sudo apt remove rsyslog`
+ - Disable rsyslog  `sudo apt remove rsyslog`
  - Move journal to ram edit `/etc/systemd/journald.conf`:
  ```
  Storage=volatile
 RuntimeMaxUse=64M
 ```
  - `sudo systemctl restart systemd-journald`
+
+## Installation (continued.)
+
  - Install requirements via `sudo apt install sox ffmpeg libasound2-dev`
  - Install dependencies via `sudo pip3 install -r requirements.txt`
  - Run the server:  `cd /home/pi/BirdNET-Analyzer && python3 server.py`
@@ -59,8 +64,8 @@ sudo systemctl status birdnet_server.service
  - Default recording save directory is specified in [config.py](https://github.com/mzakharo/birdnetapp/blob/main/birdnetapp/config.py), `SAVEDIR` variable
  - User can expose `SEVEDIR` directory over web broser through `birdnet_browser.service`
  
- ## Run Tests
-  - Install test framework
+ ## Test the app (Development)
+  - Install the test framework
   ```
   pip3 install tox
   ```
