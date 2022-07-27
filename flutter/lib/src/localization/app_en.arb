@@ -1,0 +1,6 @@
+{
+  "appTitle": "birdnetapp",
+  "@appTitle": {
+    "description": "The title of the application"
+  }
+}
