@@ -6,6 +6,7 @@ import 'sample_feature/sample_item_details_view.dart';
 import 'sample_feature/sample_item_list_view.dart';
 import 'settings/settings_controller.dart';
 import 'settings/settings_view.dart';
+import 'package:flex_color_scheme/flex_color_scheme.dart';
 
 /// The Widget that configures your application.
 class MyApp extends StatelessWidget {
@@ -73,8 +74,9 @@ class MyApp extends StatelessWidget {
           // Define a light and dark color theme. Then, read the user's
           // preferred ThemeMode (light, dark, or system default) from the
           // SettingsController to display the correct theme.
-          theme: lightThemeData,
-          darkTheme: darkThemeData,
+          theme: FlexThemeData.light(scheme: FlexScheme.dellGenoa),
+          // The Mandy red, dark theme.
+          darkTheme: FlexThemeData.dark(scheme: FlexScheme.dellGenoa),
           themeMode: settingsController.themeMode,
 
           // Define a function to handle named routes in order to support

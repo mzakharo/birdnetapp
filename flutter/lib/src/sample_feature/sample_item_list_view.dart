@@ -20,6 +20,7 @@ class BarChartState extends State<_BarChart>{
   List<BarChartGroupData> barGroups = [];
   List<String> labels = [];
   List<int> counts = [];
+  List<DataRow> rows = [];
   final double maxY = 20;
   bool is_loaded = false;
   @override
@@ -43,6 +44,18 @@ class BarChartState extends State<_BarChart>{
     barGroups = [];
     birds.forEach((k, v)  {
     print('$i $k $v');
+
+    var row = DataRow(
+          cells: <DataCell>[
+            DataCell(Text(k)),
+            DataCell(Text(v.toString())),
+          ],
+        );
+    rows.add(row);
+
+
+
+
     labels.add(k);
     counts.add(v);
     var val = BarChartGroupData(
@@ -69,6 +82,30 @@ class BarChartState extends State<_BarChart>{
   Widget build(BuildContext context) {
     return 
      !is_loaded ? CircularProgressIndicator() :
+    Column( crossAxisAlignment: CrossAxisAlignment.stretch,
+    children : [ 
+     DataTable(
+      columns: <DataColumn>[
+        DataColumn(
+          label: Text(
+            'Bird Name',
+            style: TextStyle(fontStyle: FontStyle.italic, fontWeight: FontWeight.bold),
+          ),
+        ),
+        DataColumn(
+          label: Text(
+            'Count',
+            style: TextStyle(fontStyle: FontStyle.italic, fontWeight: FontWeight.bold),
+          ),
+        ),
+      ],
+      rows: rows,
+      ),
+      ],
+      );
+
+     
+     /*
       BarChart(
       BarChartData(
         barTouchData: barTouchData,
@@ -79,7 +116,7 @@ class BarChartState extends State<_BarChart>{
         alignment: BarChartAlignment.spaceAround,
         maxY: maxY,
       ),
-    );
+    ); */
   }
 
   BarTouchData get barTouchData => BarTouchData(

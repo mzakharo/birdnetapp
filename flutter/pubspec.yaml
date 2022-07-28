@@ -16,7 +16,7 @@ dependencies:
     sdk: flutter
   dio: ^4.0.6
   fl_chart: ^0.55.0
-
+  flex_color_scheme: ^5.0.1
 
 dev_dependencies:
   flutter_test:
