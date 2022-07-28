@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'dart:convert';
 import '../settings/settings_view.dart';
 import 'sample_item.dart';
 import 'sample_item_details_view.dart';
@@ -9,12 +9,67 @@ import '../globals.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
-class _BarChart extends StatelessWidget {
+class _BarChart extends StatefulWidget {
   const _BarChart({Key? key}) : super(key: key);
+  @override
+  State<StatefulWidget> createState() => BarChartState();
+}
+
+class BarChartState extends State<_BarChart>{
+
+  List<BarChartGroupData> barGroups = [];
+  List<String> labels = [];
+  List<int> counts = [];
+  final double maxY = 20;
+  bool is_loaded = false;
+  @override
+  void initState() {
+    super.initState();
+    initAsync();
+
+  }
+
+  void initAsync() async {
+
+    var response;
+    try {
+      response = await Dio().get(PREFIX + "/birds");
+    } catch (e) {
+      print(e);
+      return;
+    }
+    var birds = jsonDecode(response.data);
+    int i = 0;
+    barGroups = [];
+    birds.forEach((k, v)  {
+    print('$i $k $v');
+    labels.add(k);
+    counts.add(v);
+    var val = BarChartGroupData(
+      x: i,
+      barRods: [
+        BarChartRodData(
+          toY: v < maxY ? v : maxY - 1,
+          gradient: _barsGradient,
+        )
+      ],
+      showingTooltipIndicators: [0],
+    );
+    barGroups.add(val);
+    i += 1;
+    });
+    setState(() {
+      is_loaded = true;
+    });
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
-    return BarChart(
+    return 
+     !is_loaded ? CircularProgressIndicator() :
+      BarChart(
       BarChartData(
         barTouchData: barTouchData,
         titlesData: titlesData,
@@ -22,7 +77,7 @@ class _BarChart extends StatelessWidget {
         barGroups: barGroups,
         gridData: FlGridData(show: false),
         alignment: BarChartAlignment.spaceAround,
-        maxY: 20,
+        maxY: maxY,
       ),
     );
   }
@@ -40,7 +95,8 @@ class _BarChart extends StatelessWidget {
             int rodIndex,
           ) {
             return BarTooltipItem(
-              rod.toY.round().toString(),
+              //rod.toY.round().toString(),
+              counts[groupIndex].toString(),
               const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
@@ -56,33 +112,7 @@ class _BarChart extends StatelessWidget {
       fontWeight: FontWeight.bold,
       fontSize: 14,
     );
-    String text;
-    switch (value.toInt()) {
-      case 0:
-        text = 'Mn';
-        break;
-      case 1:
-        text = 'Te';
-        break;
-      case 2:
-        text = 'Wd';
-        break;
-      case 3:
-        text = 'Tu';
-        break;
-      case 4:
-        text = 'Fr';
-        break;
-      case 5:
-        text = 'St';
-        break;
-      case 6:
-        text = 'Sn';
-        break;
-      default:
-        text = '';
-        break;
-    }
+    String text = labels[value.toInt()];
     return SideTitleWidget(
       axisSide: meta.axisSide,
       space: 4.0,
@@ -123,68 +153,6 @@ class _BarChart extends StatelessWidget {
     end: Alignment.topCenter,
   );
 
-  List<BarChartGroupData> get barGroups => [
-        BarChartGroupData(
-          x: 0,
-          barRods: [
-            BarChartRodData(
-              toY: 8,
-              gradient: _barsGradient,
-            )
-          ],
-          showingTooltipIndicators: [0],
-        ),
-        BarChartGroupData(
-          x: 1,
-          barRods: [
-            BarChartRodData(
-              toY: 10,
-              gradient: _barsGradient,
-            )
-          ],
-          showingTooltipIndicators: [0],
-        ),
-        BarChartGroupData(
-          x: 2,
-          barRods: [
-            BarChartRodData(
-              toY: 14,
-              gradient: _barsGradient,
-            )
-          ],
-          showingTooltipIndicators: [0],
-        ),
-        BarChartGroupData(
-          x: 3,
-          barRods: [
-            BarChartRodData(
-              toY: 15,
-              gradient: _barsGradient,
-            )
-          ],
-          showingTooltipIndicators: [0],
-        ),
-        BarChartGroupData(
-          x: 3,
-          barRods: [
-            BarChartRodData(
-              toY: 13,
-              gradient: _barsGradient,
-            )
-          ],
-          showingTooltipIndicators: [0],
-        ),
-        BarChartGroupData(
-          x: 3,
-          barRods: [
-            BarChartRodData(
-              toY: 10,
-              gradient: _barsGradient,
-            )
-          ],
-          showingTooltipIndicators: [0],
-        ),
-      ];
 }
 
 class SampleItemListView extends StatefulWidget {
@@ -195,24 +163,13 @@ class SampleItemListView extends StatefulWidget {
   State<StatefulWidget> createState() => BarChartSample3State();
 }
 
-void initAsync() async {
-
-  try {
-    var response = await Dio().get(PREFIX + "/birds");
-    print(response);
-  } catch (e) {
-    print(e);
-  }
-}
-
 class BarChartSample3State extends State<SampleItemListView> {
   @override
   Widget build(BuildContext context) {
 
-    initAsync();
     return Scaffold(
       appBar: AppBar(
-        title: const Text('BirdNet App'),
+        title: const Text('BirdNet App (Last 24 Hours)'),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
@@ -226,7 +183,7 @@ class BarChartSample3State extends State<SampleItemListView> {
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
         color: Theme.of(context).colorScheme.secondary,
-        child: const _BarChart(),
+        child: _BarChart(),
       ),
     );
   }
