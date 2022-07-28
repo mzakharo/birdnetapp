@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../settings/settings_view.dart';
 import 'sample_item.dart';
 import 'sample_item_details_view.dart';
+import 'package:dio/dio.dart';
+import '../globals.dart';
 
 /// Displays a list of SampleItems.
 class SampleItemListView extends StatelessWidget {
@@ -15,8 +17,18 @@ class SampleItemListView extends StatelessWidget {
 
   final List<SampleItem> items;
 
+void getHttp() async {
+  try {
+    var response = await Dio().get(PREFIX + '/foo');
+    print(response);
+  } catch (e) {
+    print(e);
+  }
+}
+
   @override
   Widget build(BuildContext context) {
+    getHttp();
     return Scaffold(
       appBar: AppBar(
         title: const Text('Sample Items'),

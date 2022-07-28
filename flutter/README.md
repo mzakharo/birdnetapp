@@ -20,11 +20,17 @@ include with your application.
 The `assets/images` directory contains [resolution-aware
 images](https://flutter.dev/docs/development/ui/assets-and-images#resolution-aware).
 
-## Localization
+## build with base href
+```
+flutter build web --base-href "/path/"
+```
 
-This project generates localized messages based on arb files found in
-the `lib/src/localization` directory.
+## Installation  of CORS disable
 
-To support additional languages, please visit the tutorial on
-[Internationalizing Flutter
-apps](https://flutter.dev/docs/development/accessibility-and-localization/internationalization)
+$ dart pub global activate flutter_cors
+
+$ fluttercors --disable
+$ fluttercors --enable
+
+
+
