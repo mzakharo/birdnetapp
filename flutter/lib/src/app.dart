@@ -22,8 +22,25 @@ class MyApp extends StatelessWidget {
     //
     // The AnimatedBuilder Widget listens to the SettingsController for changes.
     // Whenever the user updates their settings, the MaterialApp is rebuilt.
+    Color seedColor = Color.fromARGB(1, 0, 0x68, 0x7d);
+      ThemeData lightThemeData = ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: seedColor,
+        ),
+      );
+      ThemeData darkThemeData = ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: seedColor,
+          brightness: Brightness.dark,
+        ),
+      );
+
+
+
+
     return AnimatedBuilder(
       animation: settingsController,
+
       builder: (BuildContext context, Widget? child) {
         return MaterialApp(
           // Providing a restorationScopeId allows the Navigator built by the
@@ -56,8 +73,8 @@ class MyApp extends StatelessWidget {
           // Define a light and dark color theme. Then, read the user's
           // preferred ThemeMode (light, dark, or system default) from the
           // SettingsController to display the correct theme.
-          theme: ThemeData(),
-          darkTheme: ThemeData.dark(),
+          theme: lightThemeData,
+          darkTheme: darkThemeData,
           themeMode: settingsController.themeMode,
 
           // Define a function to handle named routes in order to support

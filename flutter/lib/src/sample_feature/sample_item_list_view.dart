@@ -195,9 +195,21 @@ class SampleItemListView extends StatefulWidget {
   State<StatefulWidget> createState() => BarChartSample3State();
 }
 
+void initAsync() async {
+
+  try {
+    var response = await Dio().get(PREFIX + "/birds");
+    print(response);
+  } catch (e) {
+    print(e);
+  }
+}
+
 class BarChartSample3State extends State<SampleItemListView> {
   @override
   Widget build(BuildContext context) {
+
+    initAsync();
     return Scaffold(
       appBar: AppBar(
         title: const Text('BirdNet App'),
@@ -210,14 +222,11 @@ class BarChartSample3State extends State<SampleItemListView> {
           ),
         ],
       ),
-      body: AspectRatio(
-        aspectRatio: 16.0 / 9.0,
-        child: Card(
-          elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-          color: const Color(0xff2c4260),
-          child: const _BarChart(),
-        ),
+      body: Card(
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+        color: Theme.of(context).colorScheme.secondary,
+        child: const _BarChart(),
       ),
     );
   }
