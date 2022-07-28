@@ -1,2 +1,2 @@
-from birdnetapp import main
+from birdnetapp.main import main
 main()
