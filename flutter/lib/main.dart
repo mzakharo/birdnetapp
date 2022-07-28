@@ -6,7 +6,6 @@ import 'src/settings/settings_service.dart';
 import 'src/globals.dart' as globals;
 
 void main() async {
-
   const String prefix = String.fromEnvironment('PREFIX');
   print("PREFIX $prefix");
   globals.PREFIX = prefix;
