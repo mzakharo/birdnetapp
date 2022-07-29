@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, Response, send_file
 from flask import send_from_directory
 from flask import render_template
 import pandas as pd
@@ -10,7 +10,7 @@ from influxdb_client.client.write_api import SYNCHRONOUS
 
 from tzlocal import get_localzone # $ pip install tzlocal
 from birdnetapp.secrets import INFLUX_URL, INFLUX_TOKEN, INFLUX_ORG, INFLUX_BUCKET
-from birdnetapp.config import APP_WINDOW
+from birdnetapp.config import APP_WINDOW, SAVEDIR
 
 FLUTTER_WEB_APP = 'flutter/build/web'
 
@@ -71,6 +71,35 @@ def birds():
 @app.route('/')
 def render_page():
     return render_template('/index.html')
+
+
+@app.route('/details/<name>')
+def details(name):
+    files = []
+    folder = os.path.join(SAVEDIR, name)
+    for x in os.walk(folder):
+        contents = x[2]
+        for f in contents:
+            if f.endswith('.json'):
+                files.append(f.split('.')[0])
+    return json.dumps(sorted(files, reverse=True))
+
+@app.route('/mp3/<name>/<date>')
+def mp3(name, date):
+    fname = os.path.join(SAVEDIR, name, date + '.mp3')
+    def generate():
+        with open(fname, "rb") as f:
+            data = f.read(1024)
+            while data:
+                yield data
+                data = f.read(1024)
+    return Response(generate(), mimetype="audio/mp3")
+
+@app.route('/png/<name>/<date>')
+def png(name, date):
+    image = os.path.join(SAVEDIR, name, date + '.png')
+    return send_file(image, mimetype='image/png')
+
 
 if __name__ == '__main__':
     app.run()

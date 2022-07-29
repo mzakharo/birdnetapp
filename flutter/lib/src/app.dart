@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
     // The AnimatedBuilder Widget listens to the SettingsController for changes.
     // Whenever the user updates their settings, the MaterialApp is rebuilt.
 
-    var scheme = FlexScheme.blumineBlue;
+    var scheme = FlexScheme.shark;
 
     return AnimatedBuilder(
       animation: settingsController,

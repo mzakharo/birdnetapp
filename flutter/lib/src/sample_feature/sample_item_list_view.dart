@@ -52,7 +52,7 @@ class SampleItemListViewState extends State<SampleItemListView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('BirdNet App (Name. Count. Last)'),
+        title: const Text('BirdNet App'),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
@@ -82,7 +82,7 @@ class SampleItemListViewState extends State<SampleItemListView> {
           final item = items[index];
 
           return ListTile(
-            title: Text('${item.name}. ${item.count}. ${item.time}'),
+            title: Text('${item.name}. Count: ${item.count}. Last: ${item.time}'),
             leading: const CircleAvatar(
               // Display the Flutter Logo image asset.
               foregroundImage: AssetImage('assets/images/flutter_logo.png'),
