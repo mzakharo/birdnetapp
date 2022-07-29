@@ -23,21 +23,8 @@ class MyApp extends StatelessWidget {
     //
     // The AnimatedBuilder Widget listens to the SettingsController for changes.
     // Whenever the user updates their settings, the MaterialApp is rebuilt.
-    Color seedColor = Color.fromARGB(1, 0, 0x68, 0x7d);
-      ThemeData lightThemeData = ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: seedColor,
-        ),
-      );
-      ThemeData darkThemeData = ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: seedColor,
-          brightness: Brightness.dark,
-        ),
-      );
 
-
-
+    var scheme = FlexScheme.blumineBlue;
 
     return AnimatedBuilder(
       animation: settingsController,
@@ -71,12 +58,9 @@ class MyApp extends StatelessWidget {
           onGenerateTitle: (BuildContext context) =>
               AppLocalizations.of(context)!.appTitle,
 
-          // Define a light and dark color theme. Then, read the user's
-          // preferred ThemeMode (light, dark, or system default) from the
-          // SettingsController to display the correct theme.
-          theme: FlexThemeData.light(scheme: FlexScheme.dellGenoa),
-          // The Mandy red, dark theme.
-          darkTheme: FlexThemeData.dark(scheme: FlexScheme.dellGenoa),
+          theme: FlexThemeData.light(scheme: scheme),
+          darkTheme: FlexThemeData.dark(scheme: scheme ),
+
           themeMode: settingsController.themeMode,
 
           // Define a function to handle named routes in order to support

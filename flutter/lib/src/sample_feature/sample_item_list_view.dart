@@ -1,35 +1,29 @@
 import 'package:flutter/material.dart';
-import 'dart:convert';
+
 import '../settings/settings_view.dart';
 import 'sample_item.dart';
 import 'sample_item_details_view.dart';
 import 'package:dio/dio.dart';
 import '../globals.dart';
+import 'dart:convert';
 
-import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter/material.dart';
-
-class _BarChart extends StatefulWidget {
-  const _BarChart({Key? key}) : super(key: key);
+class SampleItemListView extends StatefulWidget {
+  const SampleItemListView({Key? key}) : super(key: key);
+  static const routeName = '/';
   @override
-  State<StatefulWidget> createState() => BarChartState();
+  State<StatefulWidget> createState() => SampleItemListViewState();
 }
 
-class BarChartState extends State<_BarChart>{
+/// Displays a list of SampleItems.
+class SampleItemListViewState extends State<SampleItemListView> {
+  List<SampleItem> items = [];
 
-  List<BarChartGroupData> barGroups = [];
-  List<String> labels = [];
-  List<int> counts = [];
-  List<DataRow> rows = [];
-  final double maxY = 20;
-  bool is_loaded = false;
   @override
   void initState() {
     super.initState();
     initAsync();
 
   }
-
   void initAsync() async {
 
     var response;
@@ -41,169 +35,21 @@ class BarChartState extends State<_BarChart>{
     }
     var birds = jsonDecode(response.data);
     int i = 0;
-    barGroups = [];
     birds.forEach((k, v)  {
     print('$i $k $v');
-
-    var row = DataRow(
-          cells: <DataCell>[
-            DataCell(Text(k)),
-            DataCell(Text(v.toString())),
-          ],
-        );
-    rows.add(row);
-
-
-
-
-    labels.add(k);
-    counts.add(v);
-    var val = BarChartGroupData(
-      x: i,
-      barRods: [
-        BarChartRodData(
-          toY: v < maxY ? v : maxY - 1,
-          gradient: _barsGradient,
-        )
-      ],
-      showingTooltipIndicators: [0],
-    );
-    barGroups.add(val);
+    items.add(SampleItem(i, k, v));
     i += 1;
     });
     setState(() {
-      is_loaded = true;
     });
   }
 
 
 
+
+
   @override
   Widget build(BuildContext context) {
-    return 
-     !is_loaded ? CircularProgressIndicator() :
-    Column( crossAxisAlignment: CrossAxisAlignment.stretch,
-    children : [ 
-     DataTable(
-      columns: <DataColumn>[
-        DataColumn(
-          label: Text(
-            'Bird Name',
-            style: TextStyle(fontStyle: FontStyle.italic, fontWeight: FontWeight.bold),
-          ),
-        ),
-        DataColumn(
-          label: Text(
-            'Count',
-            style: TextStyle(fontStyle: FontStyle.italic, fontWeight: FontWeight.bold),
-          ),
-        ),
-      ],
-      rows: rows,
-      ),
-      ],
-      );
-
-     
-     /*
-      BarChart(
-      BarChartData(
-        barTouchData: barTouchData,
-        titlesData: titlesData,
-        borderData: borderData,
-        barGroups: barGroups,
-        gridData: FlGridData(show: false),
-        alignment: BarChartAlignment.spaceAround,
-        maxY: maxY,
-      ),
-    ); */
-  }
-
-  BarTouchData get barTouchData => BarTouchData(
-        enabled: false,
-        touchTooltipData: BarTouchTooltipData(
-          tooltipBgColor: Colors.transparent,
-          tooltipPadding: const EdgeInsets.all(0),
-          tooltipMargin: 8,
-          getTooltipItem: (
-            BarChartGroupData group,
-            int groupIndex,
-            BarChartRodData rod,
-            int rodIndex,
-          ) {
-            return BarTooltipItem(
-              //rod.toY.round().toString(),
-              counts[groupIndex].toString(),
-              const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            );
-          },
-        ),
-      );
-
-  Widget getTitles(double value, TitleMeta meta) {
-    const style = TextStyle(
-      color: Color(0xff7589a2),
-      fontWeight: FontWeight.bold,
-      fontSize: 14,
-    );
-    String text = labels[value.toInt()];
-    return SideTitleWidget(
-      axisSide: meta.axisSide,
-      space: 4.0,
-      child: Text(text, style: style),
-    );
-  }
-
-  FlTitlesData get titlesData => FlTitlesData(
-        show: true,
-        bottomTitles: AxisTitles(
-          sideTitles: SideTitles(
-            showTitles: true,
-            reservedSize: 30,
-            getTitlesWidget: getTitles,
-          ),
-        ),
-        leftTitles: AxisTitles(
-          sideTitles: SideTitles(showTitles: false),
-        ),
-        topTitles: AxisTitles(
-          sideTitles: SideTitles(showTitles: false),
-        ),
-        rightTitles: AxisTitles(
-          sideTitles: SideTitles(showTitles: false),
-        ),
-      );
-
-  FlBorderData get borderData => FlBorderData(
-        show: false,
-      );
-
-  final _barsGradient = const LinearGradient(
-    colors: [
-      Colors.lightBlueAccent,
-      Colors.greenAccent,
-    ],
-    begin: Alignment.bottomCenter,
-    end: Alignment.topCenter,
-  );
-
-}
-
-class SampleItemListView extends StatefulWidget {
-  const SampleItemListView({Key? key}) : super(key: key);
-
-  static const routeName = '/sample_item_list_view';
-  @override
-  State<StatefulWidget> createState() => BarChartSample3State();
-}
-
-class BarChartSample3State extends State<SampleItemListView> {
-  @override
-  Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('BirdNet App (Last 24 Hours)'),
@@ -211,16 +57,48 @@ class BarChartSample3State extends State<SampleItemListView> {
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
+              // Navigate to the settings page. If the user leaves and returns
+              // to the app after it has been killed while running in the
+              // background, the navigation stack is restored.
               Navigator.restorablePushNamed(context, SettingsView.routeName);
             },
           ),
         ],
       ),
-      body: Card(
-        elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-        color: Theme.of(context).colorScheme.secondary,
-        child: _BarChart(),
+
+      // To work with lists that may contain a large number of items, it’s best
+      // to use the ListView.builder constructor.
+      //
+      // In contrast to the default ListView constructor, which requires
+      // building all Widgets up front, the ListView.builder constructor lazily
+      // builds Widgets as they’re scrolled into view.
+      body: ListView.builder(
+        // Providing a restorationId allows the ListView to restore the
+        // scroll position when a user leaves and returns to the app after it
+        // has been killed while running in the background.
+        restorationId: 'sampleItemListView',
+        itemCount: items.length,
+        itemBuilder: (BuildContext context, int index) {
+          final item = items[index];
+
+          return ListTile(
+            title: Text('${item.name}. Detected: ${item.count}'),
+            leading: const CircleAvatar(
+              // Display the Flutter Logo image asset.
+              foregroundImage: AssetImage('assets/images/flutter_logo.png'),
+            ),
+            onTap: () {
+              // Navigate to the details page. If the user leaves and returns to
+              // the app after it has been killed while running in the
+              // background, the navigation stack is restored.
+              Navigator.restorablePushNamed(
+                context,
+                SampleItemDetailsView.routeName,
+                arguments: item.name,
+              );
+            }
+          );
+        },
       ),
     );
   }
