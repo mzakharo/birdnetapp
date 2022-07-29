@@ -14,7 +14,10 @@ from pydub import AudioSegment
 import subprocess
 import logging
 import argparse
+import warnings
 from influxdb_client import Point, WritePrecision
+from influxdb_client.client.warnings import MissingPivotFunction
+warnings.simplefilter("ignore", MissingPivotFunction)
 from .secrets import TELEGRAM_TOKEN, TELEGRAM_CHATID, INFLUX_BUCKET, INFLUX_ORG
 from .config import *
 from .clean import cleanup

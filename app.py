@@ -7,6 +7,9 @@ import json
 
 from influxdb_client import InfluxDBClient, Point, WritePrecision
 from influxdb_client.client.write_api import SYNCHRONOUS
+import warnings
+from influxdb_client.client.warnings import MissingPivotFunction
+warnings.simplefilter("ignore", MissingPivotFunction)
 
 from tzlocal import get_localzone # $ pip install tzlocal
 from birdnetapp.secrets import INFLUX_URL, INFLUX_TOKEN, INFLUX_ORG, INFLUX_BUCKET
