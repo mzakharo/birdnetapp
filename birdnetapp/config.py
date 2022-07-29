@@ -42,3 +42,6 @@ PORT = 8080
 #time window of how long the bird must be not seen to trigger a telegram
 SEEN_TIME = '14d'
 
+#time window of app result fetch
+APP_WINDOW = '14d'
+

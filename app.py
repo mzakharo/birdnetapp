@@ -1,13 +1,16 @@
 from flask import Flask
 from flask import send_from_directory
 from flask import render_template
+import pandas as pd
 import os
 import json
 
 from influxdb_client import InfluxDBClient, Point, WritePrecision
 from influxdb_client.client.write_api import SYNCHRONOUS
 
+from tzlocal import get_localzone # $ pip install tzlocal
 from birdnetapp.secrets import INFLUX_URL, INFLUX_TOKEN, INFLUX_ORG, INFLUX_BUCKET
+from birdnetapp.config import APP_WINDOW
 
 FLUTTER_WEB_APP = 'flutter/build/web'
 
@@ -34,14 +37,29 @@ def return_flutter_doc(name):
 @app.route('/birds')
 def birds():
 
+    # get local timezone    
+    local_tz = str(get_localzone())
+    print('local tz', local_tz)
+
     df = query_api.query_data_frame(f'''
-            from(bucket:"{INFLUX_BUCKET}") 
-            |> range(start: -24h)
-            |> filter(fn: (r) => r["_measurement"] == "birdnet")
-            |> count()
-            ''')
+        m = from(bucket:"{INFLUX_BUCKET}") 
+          |> range(start: -{APP_WINDOW})
+          |> filter(fn: (r) => r["_measurement"] == "birdnet")
+        c = m
+          |> count()
+        l = m
+          |> last()
+        join(tables: {{count:c, last:l}}, on: ["_field"])
+          |> group()
+          |>sort(columns: ["_time"], desc: true)
+        ''')
+    #df.sort_values(["_time"], inplace=True,  ascending=False)
     #print(df)
-    o = {v['_field'] : v['_value'] for i, v in df.iterrows()}
+
+    df.set_index(df._time, inplace=True)
+    df.index = pd.to_datetime(df.index)
+    df.index = df.index.tz_convert(local_tz)
+    o = {v['_field'] : {'count' : v['_value_count'], 'time' : i.strftime('%m-%d %H:%M')} for i, v in df.iterrows()}
     '''
     files = []
     folder = '/home/user/birdNet/'

@@ -37,7 +37,7 @@ class SampleItemListViewState extends State<SampleItemListView> {
     int i = 0;
     birds.forEach((k, v)  {
     print('$i $k $v');
-    items.add(SampleItem(i, k, v));
+    items.add(SampleItem(i, k, v['count'], v['time']));
     i += 1;
     });
     setState(() {
@@ -52,7 +52,7 @@ class SampleItemListViewState extends State<SampleItemListView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('BirdNet App (Last 24 Hours)'),
+        title: const Text('BirdNet App (Name. Count. Last)'),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
@@ -82,7 +82,7 @@ class SampleItemListViewState extends State<SampleItemListView> {
           final item = items[index];
 
           return ListTile(
-            title: Text('${item.name}. Detected: ${item.count}'),
+            title: Text('${item.name}. ${item.count}. ${item.time}'),
             leading: const CircleAvatar(
               // Display the Flutter Logo image asset.
               foregroundImage: AssetImage('assets/images/flutter_logo.png'),
