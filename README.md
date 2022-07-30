@@ -1,7 +1,7 @@
 # birdnetapp
 BirdNET App for raspberry Pi 3/4+ that saves bird detections to Influx Database, alerts for new birds over Telegram.  
 
-There is a Web App too.
+Optional Web App to listen and visualize recorded content.
 
 
 <img src="https://github.com/mzakharo/birdnetapp/blob/main/assets/home.jpg" width="250" height="500"><img src="https://github.com/mzakharo/birdnetapp/blob/main/assets/details.jpg" width="250" height="500">
@@ -54,7 +54,7 @@ RuntimeMaxUse=64M
  - Edit [config.py](https://github.com/mzakharo/birdnetapp/blob/main/birdnetapp/config.py) and adjust Microphone (`RATE`, `CARD`, `CHANNELS`), and birdnet (`LON`/`LAT`) settings
  - Run the app: `cd /home/pi/birdnetapp && python3 main.py`
  - NOTE: for raspberry Pi 3, the command is `python3 main.py --stride_seconds 5`
- - Optional: install systemd services to run on startup `birdnet_main.service` and `birdnet_server.service`
+ - Optional: install systemd services to run on startup via `birdnet_main.service` and `birdnet_server.service`
   ```
 sudo cp birdnet_server.service  /lib/systemd/system/
 sudo systemctl daemon-reload
@@ -70,8 +70,8 @@ sudo systemctl status birdnet_server.service
  - Default recording save directory is specified in [config.py](https://github.com/mzakharo/birdnetapp/blob/main/birdnetapp/config.py), `SAVEDIR` variable
  
  ## Web App 
-  - Serve the web-app by running `./flask.sh` 
-  - Optional: install a systemd service file to run on startup `birdnet_app.service`
+  - Serve the Web App by running `./flask.sh` 
+  - Optional: install a systemd service file to run on startup via `birdnet_app.service`
  
  ## Test the app (Development)
   - Install the test framework
