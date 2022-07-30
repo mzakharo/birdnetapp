@@ -1,0 +1,15 @@
+[Unit]
+Description=birdNet analyzer app
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=30
+ExecStart=/home/pi/birdnetapp/flask.sh
+WorkingDirectory=/home/pi/birdnetapp/
+User=pi
+
+[Install]
+WantedBy=multi-user.target
