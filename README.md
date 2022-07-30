@@ -3,7 +3,7 @@ BirdNET App for raspberry Pi 3/4+ that saves bird detections to Influx2 Database
 
 [Grafana](https://grafana.com/get/) visualizing data from Influx2 Database
 
-<img src="https://github.com/mzakharo/birdnetapp/blob/main/assets/grafana.png" width="850" height="350">
+<img src="https://github.com/mzakharo/birdnetapp/blob/main/assets/grafana.png" width="850" height="360">
 
 Telegram Notificaiton
 
