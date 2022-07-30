@@ -71,7 +71,7 @@ sudo systemctl status birdnet_server.service
  
  ## Web App 
   - Serve the web-app by running `./flask.sh` 
-  - Optional: install a sysemd service file to run on startup `birdnet_app.service`
+  - Optional: install a systemd service file to run on startup `birdnet_app.service`
  
  ## Test the app (Development)
   - Install the test framework
