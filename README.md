@@ -1,5 +1,14 @@
 # birdnetapp
-BirdNET App for raspberry Pi 3/4+ that saves bird detections to Influx Database, alerts for new birds over Telegram.  
+BirdNET App for raspberry Pi 3/4+ that saves bird detections to Influx2 Database, alerts for new birds over Telegram. 
+
+[Grafana](https://grafana.com/get/) visualizing data from Influx2 Database
+
+<img src="https://github.com/mzakharo/birdnetapp/blob/main/assets/grafana.png" width="400" height="200">
+
+Telegram Notificaiton
+
+<img src="https://github.com/mzakharo/birdnetapp/blob/main/assets/telegram.png" width="400" height="200">
+
 
 Optional Web App to listen to and visualize recorded content.
 
@@ -8,7 +17,7 @@ Optional Web App to listen to and visualize recorded content.
 
 
 ## Assumptions
- - User has access to an InfluxDB2 instance (you can get a free one at [influxdata.com](https://cloud2.influxdata.com/signup))
+ - User has access to an Influx2 database instance (you can get a free one at [influxdata.com](https://cloud2.influxdata.com/signup))
  - User has a telegram [bot token](https://www.thewindowsclub.com/how-to-create-a-simple-telegram-bot) and a [chat id](https://stackoverflow.com/questions/32423837/telegram-bot-how-to-get-a-group-chat-id)
 
 ## Installation
