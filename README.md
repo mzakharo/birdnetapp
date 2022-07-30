@@ -1,5 +1,11 @@
 # birdnetapp
-BirdNET App for raspberry Pi 3/4+ that saves bird detections to Influx Database, alerts for new birds over Telegram.
+BirdNET App for raspberry Pi 3/4+ that saves bird detections to Influx Database, alerts for new birds over Telegram.  
+
+There is a Web App too.
+
+
+<img src="https://github.com/mzakharo/birdnetapp/blob/main/assets/home.jpg" width="250" height="500"><img src="https://github.com/mzakharo/birdnetapp/blob/main/assets/details.jpg" width="250" height="500">
+
 
 ## Assumptions
  - User has access to an InfluxDB2 instance (you can get a free one at [influxdata.com](https://cloud2.influxdata.com/signup))
@@ -62,7 +68,10 @@ sudo systemctl status birdnet_server.service
  - Telegram messages are sent after a configurable delay, after the bird stops tweeting and `NOTIFICATION_DELAY_SECONDS` elapses (from [config.py](https://github.com/mzakharo/birdnetapp/blob/main/birdnetapp/config.py)). This ensures the 'best' recording is notified with , not the first.
  - To test Telegram capability in isolation, run `PYTHONPATH=. python3 tests/test_telegram.py`
  - Default recording save directory is specified in [config.py](https://github.com/mzakharo/birdnetapp/blob/main/birdnetapp/config.py), `SAVEDIR` variable
- - User can expose `SEVEDIR` directory over web broser through `birdnet_browser.service`
+ 
+ ## Web App 
+  - Serve the web-app by running `./flask.sh` 
+  - Optional: install a sysemd service file to run on startup `birdnet_app.service`
  
  ## Test the app (Development)
   - Install the test framework
