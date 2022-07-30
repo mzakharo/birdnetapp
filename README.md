@@ -1,7 +1,7 @@
 # birdnetapp
 BirdNET App for raspberry Pi 3/4+ that saves bird detections to Influx Database, alerts for new birds over Telegram.  
 
-Optional Web App to listen and visualize recorded content.
+Optional Web App to listen to and visualize recorded content.
 
 
 <img src="https://github.com/mzakharo/birdnetapp/blob/main/assets/home.jpg" width="250" height="500"><img src="https://github.com/mzakharo/birdnetapp/blob/main/assets/details.jpg" width="250" height="500">
