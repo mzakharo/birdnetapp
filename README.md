@@ -1,16 +1,22 @@
 # birdnetapp
-BirdNET App for raspberry Pi 3/4+ that saves bird detections to Influx2 Database, alerts for new birds over Telegram. 
 
-[Grafana](https://grafana.com/get/) visualizing data from Influx2 Database
+BirdNET App for raspberry Pi 3/4+
+
+ - 24/7 recording from a USB microphone
+ - local BirdNET analysis
+ - saves bird detections to Influx2 Database
+ - alerts for new birds over Telegram
+
+- [Grafana](https://grafana.com/get/) visualizing data from Influx2 Database:
 
 <img src="https://github.com/mzakharo/birdnetapp/blob/main/assets/grafana.png" width="850" height="360">
 
-Telegram Notificaiton
+- Sample Telegram Notificaiton:
 
 <img src="https://github.com/mzakharo/birdnetapp/blob/main/assets/telegram.png" width="400" height="200">
 
 
-Optional Web App to listen to and visualize recorded content.
+- Web App to listen to and visualize recorded content.
 
 
 <img src="https://github.com/mzakharo/birdnetapp/blob/main/assets/home.jpg" width="250" height="500"><img src="https://github.com/mzakharo/birdnetapp/blob/main/assets/details.jpg" width="250" height="500">
