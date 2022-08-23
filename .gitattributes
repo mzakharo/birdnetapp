@@ -1,2 +1,7 @@
 flutter/build/web/* linguist-vendored
+flutter/windows/* linguist-vendored
+flutter/linux/* linguist-vendored
+flutter/macos/* linguist-vendored
+flutter/ios/* linguist-vendored
+flutter/android/* linguist-vendored
 
