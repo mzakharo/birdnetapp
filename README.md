@@ -28,15 +28,15 @@ BirdNET App for raspberry Pi 3/4+
 
 ## Installation
  - Clone BirdNet-Analyzer repository  to `/home/pi`
- ```
+ ```bash
  git clone https://github.com/kahst/BirdNET-Analyzer.git
  ```
  - Clone this repository to `/home/pi`
- ```
+ ```bash
  git clone https://github.com/mzakharo/birdnetapp.git
  ```
  - In  the `birdnetapp/birdnetapp` folder, create a `secrets.py` with the following contents: 
- ```
+ ```python
 TELEGRAM_TOKEN = 'from_botfather'
 TELEGRAM_CHATID = '#######'
 
@@ -48,7 +48,7 @@ INFLUX_BUCKET = "my_bucket"
  
  ### Optional: reduce SD card wear
  - setup `/tmp` as ramdisk:
-```
+```bash
 sudo cp /usr/share/systemd/tmp.mount /etc/systemd/system/tmp.mount
 sudo systemctl enable tmp.mount
 sudo systemctl start tmp.mount
@@ -90,10 +90,10 @@ sudo systemctl status birdnet_server.service
  
  ## Test the app (Development)
   - Install the test framework
-  ```
+  ```bash
   pip3 install tox
   ```
   - Run unit tests
-   ```
+   ```bash
    tox
    ```
