@@ -43,15 +43,19 @@ def get_parser():
     parser.add_argument('--rate', default=RATE, type=int, help='microphone sampling rate (Hz)')
     parser.add_argument('--stride_seconds', default=STRIDE_SECONDS, help='buffer stride (in seconds) -> increase for RPi-3', type=int)
     parser.add_argument('--notification_delay', type=int, default=NOTIFICATION_DELAY_SECONDS, help='notificaiton delay')
+    parser.add_argument('--min_notification_count', type=int, default=MIN_NOTIFICATION_COUNT, help='minimum detection count threshold for sending telegram notification')
     return parser
 
 
-def send_telegram(msg, dry=False):
+def send_telegram(msg, dry=False, min_notification_count=1):
     filename = msg['fname']
     sci_result = msg['sci']
     result = msg['name']
     conf = msg['conf']
     count = msg['count']
+    if count < min_notification_count:
+        _LOGGER.info(f'skipping telegram message for {result}')
+        return
     _LOGGER.info(f'sending telegram message for {result}')
     with open(filename, 'rb') as audio:
         linkname = sci_result.replace(' ', '+')
@@ -234,7 +238,7 @@ class Worker:
             res = f.result()
             msg = send_notification_delayed(self.delayed_notifications, ts, res, delay=self.args.notification_delay)
             if msg is not None:
-                self.futures.append(self.exc.submit(send_telegram, msg, self.args.dry))
+                self.futures.append(self.exc.submit(send_telegram, msg, self.args.dry, self.args.min_notification_count))
             return msg
 
     def work(self, ts, data):

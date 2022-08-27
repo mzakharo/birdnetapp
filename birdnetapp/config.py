@@ -42,6 +42,10 @@ PORT = 8080
 #time window of how long the bird must be not seen to trigger a telegram
 SEEN_TIME = '14d'
 
+# minimum detection count threshold for sending telegram notification
+# setting to higher than 1 reduces false alarm rate
+MIN_NOTIFICATION_COUNT = 1
+
 #time window of app result fetch
 APP_WINDOW = '14d'
 
