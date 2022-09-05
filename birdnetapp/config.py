@@ -24,16 +24,21 @@ EXPORT_FORMAT = '.mp3'
 # to send over telegram
 NOTIFICATION_DELAY_SECONDS = 60*5
 
-#birdNET settings
-
-#Note: recording length has impact on conf_thresh
-#longer recording could lower CONF_THRESH to achieve the same detection rate
+#segment length for analysis 
 RECORD_SECONDS = 6
-STRIDE_SECONDS = (RECORD_SECONDS) // 2
-CONF_TRHRESH = 0.55
-LAT=43.544811
-LON=-80.248108
+
+#birdNET settings
+LAT=-1
+LON=-1
+# number of seconds of overlap within a segment. increases chance of detection at the expense of CPU usage
 OVERLAP = 0
+#pool mode -> max or average -> how to pool confidence of multiple results from one segment
+# max has a higher detection rate at the expense of increased false detect rate
+PMODE = 'max' # 'avg'
+#sensitivity of detection. Values in [0.5, 1.5]. Defaults to 1.0. higher value is lower sensitivity
+SENSITIVITY=1.5
+#minimum prediction confidence threshold 
+CONF_THRESH = 0.70
 
 #birdNet server
 HOST='127.0.0.1'

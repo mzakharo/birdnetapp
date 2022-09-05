@@ -30,20 +30,24 @@ MDATA = {'lat': LAT,
          'lon': LON, 
          'num_results': 3,
          'overlap' : OVERLAP,
+         'pmode' : PMODE,
+         'sensitivity': SENSITIVITY,
          }
 
 
 def get_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--min_confidence', type=float, default=CONF_TRHRESH, help='minimum confidence threshold')
+    parser.add_argument('--min_confidence', type=float, default=CONF_THRESH, help='minimum confidence threshold')
     parser.add_argument('--dry', action='store_true', help='do not upload to influx, send notifications')
     parser.add_argument('--debug', action='store_true', help='enable debug logs')
     parser.add_argument('--card', default=CARD, help='microphone card to look for')
     parser.add_argument('--channels', default=CHANNELS, type=int, help='microphone number of channels')
     parser.add_argument('--rate', default=RATE, type=int, help='microphone sampling rate (Hz)')
-    parser.add_argument('--stride_seconds', default=STRIDE_SECONDS, help='buffer stride (in seconds) -> increase for RPi-3', type=int)
+    parser.add_argument('--stride_seconds', default=RECORD_SECONDS // 2, help='buffer stride (in seconds) -> increase for RPi-3', type=int)
     parser.add_argument('--notification_delay', type=int, default=NOTIFICATION_DELAY_SECONDS, help='notificaiton delay')
     parser.add_argument('--min_notification_count', type=int, default=MIN_NOTIFICATION_COUNT, help='minimum detection count threshold for sending telegram notification')
+    parser.add_argument('--latitude', type=float, default=LAT, help='latitude for zone based result filtering')
+    parser.add_argument('--longtitude', type=float, default=LON, help='longtitude for zone based result filtering')
     return parser
 
 

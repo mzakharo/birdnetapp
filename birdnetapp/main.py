@@ -6,7 +6,7 @@ from influxdb_client.client.write_api import SYNCHRONOUS
 import datetime
 
 from .secrets import INFLUX_URL, INFLUX_TOKEN, INFLUX_ORG
-from .app import Worker, get_parser
+from .app import Worker, get_parser, MDATA
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ class MicStream():
 
     def open(self):
         cards = alsaaudio.cards()
-        _LOGGER.info(f"Detected cards {cards} configuring: '{self.card}' from config.CARD")
+        _LOGGER.info(f"Detected cards {cards} configuring card: '{self.card}'")
         card_i = cards.index(self.card)
         self.stream = alsaaudio.PCM(alsaaudio.PCM_CAPTURE, channels=self.channels, format=alsaaudio.PCM_FORMAT_S16_LE, rate=self.rate, periodsize=self.periodsize, cardindex=card_i)
         got_rate = self.stream.setrate(self.rate)
@@ -75,6 +75,10 @@ def runner(args, stream):
 def main():
     parser = get_parser()
     args = parser.parse_args()
+    print('App CONFIG:', args)
+    MDATA['lat'] = args.latitude
+    MDATA['lon'] = args.longtitude
+    print('birdNet settings', MDATA)
 
     if args.debug:
         logging.basicConfig(level=logging.DEBUG)
