@@ -93,3 +93,14 @@ sudo systemctl status birdnet_server.service
    ```bash
    tox
    ```
+ ## Influx Query for the Bar Gauge Grafana Widget 
+ ```influx
+  from(bucket: "main")
+  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+  |> filter(fn: (r) => r["_measurement"] == "birdnet")
+  |> count()
+  |> group()
+  |> sort(desc:true)
+  |> keep(columns: ["_field", "_value"])
+  |> rename(columns: { _value: ""})
+  ```
