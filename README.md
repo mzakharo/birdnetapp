@@ -3,7 +3,7 @@
 BirdNET App for raspberry Pi 3/4+
 
  - 24/7 recording from a USB microphone
- - local BirdNET analysis
+ - local [BirdNET](https://github.com/kahst/BirdNET-Analyzer) analysis
  - saves bird detections to Influx2 Database
  - alerts for new birds over Telegram
 
