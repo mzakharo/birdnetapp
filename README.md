@@ -27,13 +27,9 @@ BirdNET App for raspberry Pi 3/4+
  - User has a telegram [bot token](https://www.thewindowsclub.com/how-to-create-a-simple-telegram-bot) and a [chat id](https://stackoverflow.com/questions/32423837/telegram-bot-how-to-get-a-group-chat-id)
 
 ## Installation
- - Clone BirdNet-Analyzer repository  to `/home/pi`
+ - cd to `/home/pi`
  ```bash
- git clone https://github.com/kahst/BirdNET-Analyzer.git
- ```
- - Clone this repository to `/home/pi`
- ```bash
- git clone https://github.com/mzakharo/birdnetapp.git
+ git clone --recurse-submodules https://github.com/mzakharo/birdnetapp.git
  ```
  - In  the `birdnetapp/birdnetapp` folder, create a `secrets.py` with the following contents: 
  ```python
