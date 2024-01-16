@@ -4,4 +4,4 @@ flutter/linux/** linguist-vendored
 flutter/macos/** linguist-vendored
 flutter/ios/** linguist-vendored
 flutter/android/** linguist-vendored
-
+*.whl filter=lfs diff=lfs merge=lfs -text

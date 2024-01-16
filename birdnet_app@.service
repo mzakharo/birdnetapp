@@ -7,9 +7,9 @@ StartLimitIntervalSec=0
 Type=simple
 Restart=always
 RestartSec=30
-ExecStart=/home/pi/birdnetapp/flask.sh
-WorkingDirectory=/home/pi/birdnetapp/
-User=pi
+ExecStart=/home/%i/birdnetapp/flask.sh
+WorkingDirectory=/home/%i/birdnetapp/
+User=%i
 
 [Install]
 WantedBy=multi-user.target

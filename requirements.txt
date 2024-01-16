@@ -12,7 +12,3 @@ influxdb-client
 pyTelegramBotAPI
 pydub
 
-#for the web app
-flask
-tzlocal
-gunicorn

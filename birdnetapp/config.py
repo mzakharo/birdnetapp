@@ -36,7 +36,7 @@ OVERLAP = 0
 # max has a higher detection rate at the expense of increased false detect rate
 PMODE = 'max' # 'avg'
 #sensitivity of detection. Values in [0.5, 1.5]. Defaults to 1.0. higher value is lower sensitivity
-SENSITIVITY=1.5
+SENSITIVITY=1.0
 #minimum prediction confidence threshold 
 CONF_THRESH = 0.70
 

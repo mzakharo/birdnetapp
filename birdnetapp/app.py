@@ -161,23 +161,7 @@ class Worker:
 
         meta = {}
         meta['conf'] = conf
-        meta['results'] = results
-
-        _LOGGER.debug(f"{result} {export_filename} conf: {conf}")
-
-        if not os.path.exists(dir_path):
-            os.makedirs(dir_path)
-        cleanup(dir_path, KEEP_FILES) #avoid running out of storage
-
-        if export_filename.endswith('.mp3'):
-            AudioSegment.from_wav(filename).export(export_filename, format="mp3", parameters=["-ac", "1", "-vol", "150", "-q:a",  "9"])
-        else:
-            shutil.copyfile(filename, export_filename)
-
-        subprocess.check_output(['sox', filename, '-n', 'spectrogram', '-o', export_spec])
-
-        with open(export_meta, 'w') as f:
-            f.write(json.dumps(meta))
+        meta['results'] = results 
 
         #send notification if it is a new bird
         query = f'''
@@ -195,6 +179,21 @@ class Worker:
 
         out = {'fname' : export_filename,'sci' :  sci_result, 'name' : result, 'conf' : conf, 'notify' : notify}
         _LOGGER.info(out)
+        
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path)
+        cleanup(dir_path, KEEP_FILES) #avoid running out of storage     
+
+        if export_filename.endswith('.mp3'):
+            AudioSegment.from_wav(filename).export(export_filename, format="mp3", parameters=["-ac", "1", "-vol", "150", "-q:a",  "9"])
+        else:
+            shutil.copyfile(filename, export_filename)
+
+        subprocess.check_output(['sox', filename, '-n', 'spectrogram', '-o', export_spec])
+
+        with open(export_meta, 'w') as f:
+            f.write(json.dumps(meta))
+        
 
         ts_utc = datetime.datetime.utcfromtimestamp(ts.timestamp())
         point = Point("birdnet") \
@@ -231,8 +230,6 @@ class Worker:
 
     def send_buffer(self, ts, data):
         self.futures.append(self.exc.submit(self.process, ts,  data, MDATA))
-        _LOGGER.debug(f'futures={len(self.futures)}')
-        assert len(self.futures) < 10 , "Processing not keeping up with incoming data"
 
     def post_process(self, ts):
         for f in self.futures:
@@ -249,12 +246,13 @@ class Worker:
         self.stride += 1
         _LOGGER.debug(f"{self.stride} {len(data)}")
         self.buf.append(data)
-        if self.stride >= self.args.stride_seconds:
-            if len(self.buf) != self.buf.maxlen:
-                return
-            self.stride = 0
+        if len(self.futures) <= 1 and len(self.buf) == self.buf.maxlen:            
             buf = b''.join(self.buf)
             self.send_buffer(ts, buf)
+            self.stride = 0
+        else:
+            if self.stride >= self.buf.maxlen:
+                _LOGGER.warning('dropping buffer')
         return self.post_process(ts)
 
 

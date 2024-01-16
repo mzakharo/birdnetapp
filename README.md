@@ -1,11 +1,12 @@
 # birdnetapp
 
-BirdNET App for raspberry Pi 3/4+
+BirdNET App for Raspberry Pi/BeagleBone
 
  - 24/7 recording from a USB microphone
  - local [BirdNET](https://github.com/kahst/BirdNET-Analyzer) analysis
- - saves bird detections to Influx2 Database
- - alerts for new birds over Telegram
+ - Influx2 Database support
+ - Telegram alerts
+ - Web App for listening & visualizing captured audio
 
 - [Grafana](https://grafana.com/get/) visualizing data from Influx2 Database:
 
@@ -27,7 +28,7 @@ BirdNET App for raspberry Pi 3/4+
  - User has a telegram [bot token](https://www.thewindowsclub.com/how-to-create-a-simple-telegram-bot) and a [chat id](https://stackoverflow.com/questions/32423837/telegram-bot-how-to-get-a-group-chat-id)
 
 ## Installation
- - cd to `/home/pi`
+ - cd `$HOME`
  ```bash
  git clone --recurse-submodules https://github.com/mzakharo/birdnetapp.git
  ```
@@ -60,40 +61,34 @@ RuntimeMaxUse=64M
 ## Installation (continued.)
 
  - Install requirements via `sudo apt install sox ffmpeg libasound2-dev`
- - Install dependencies via `sudo pip3 install -r requirements.txt`
- - Run the server:  `cd /home/pi/BirdNET-Analyzer && python3 server.py`
- - Edit [config.py](https://github.com/mzakharo/birdnetapp/blob/main/birdnetapp/config.py) and adjust Microphone (`RATE`, `CARD`, `CHANNELS`), and birdnet (`LON`/`LAT`) settings
- - Run the app: `cd /home/pi/birdnetapp && python3 main.py`
- - NOTE: for raspberry Pi 3, the command is `python3 main.py --stride_seconds 5`
+ - for BeagleBone: `sudo apt instal llvm-dev libatlas-base-dev libsndfile1`
+ - for BeagleBone: `pip3 install numba==0.56.4`
+ - for BeagleBone: `pip3 install beaglebone/tflite_runtime-2.16.0-cp39-cp39-linux_armv7l.whl`
+ - Install dependencies via `pip3 install -r requirements.txt`
+ - Run the server:  `cd $HOME/birdnetapp/BirdNET-Analyzer && python3 server.py`
+ - Run the app: `cd $HOME/birdnetapp && python3 main.py --lat  <latitude> --lon <longitude> --notification_delay 15`
+ - Note: the app will probably complain that the mic is not configured properly and give options on possible configurations. adjust `--card --channels --rate` parameters according to your microphone capabilities
+
+
  - Optional: install systemd services to run on startup via `birdnet_main.service` and `birdnet_server.service`
   ```
-sudo cp birdnet_server.service  /lib/systemd/system/
+sudo cp birdnet_server@.service  /lib/systemd/system/
+sudo cp birdnet_main@.service  /lib/systemd/system/
 sudo systemctl daemon-reload
-sudo systemctl enable birdnet_server.service 
-sudo systemctl start birdnet_server.service 
-sudo systemctl status birdnet_server.service 
+sudo systemctl enable birdnet_server@$USER.service 
+sudo systemctl start birdnet_server@$USER.service 
+sudo systemctl status birdnet_server@$USER.service
+sudo systemctl enable birdnet_main@$USER.service 
+sudo systemctl start birdnet_main@$USER.service 
+sudo systemctl status birdnet_main@$USER.service 
   ```
 
-## Tips
- - Telegram notification cooldown is controlled by `SEEN_TIME` variable in [config.py](https://github.com/mzakharo/birdnetapp/blob/main/birdnetapp/config.py). If a bird has already been seen within this time window, it will not trigger Telegram notificaitons
- - Telegram notification is issued after the bird stops tweeting and `NOTIFICATION_DELAY_SECONDS` elapses (from [config.py](https://github.com/mzakharo/birdnetapp/blob/main/birdnetapp/config.py)). This ensures the 'best' recording is notified with, not the first. Set to `0` to disable the delay. 
- - To test Telegram capability in isolation, run `PYTHONPATH=. python3 tests/test_telegram.py`
- - Default recording save directory is specified in [config.py](https://github.com/mzakharo/birdnetapp/blob/main/birdnetapp/config.py), `SAVEDIR` variable
- 
  ## Web App 
+  - install deps in system: `sudo pip3 install flask tzlocal gunicorn`
   - Serve the Web App by running `./flask.sh` 
-  - Optional: install a systemd service file to run on startup via `birdnet_app.service`
- 
- ## Test the app (Development)
-  - Install the test framework
-  ```bash
-  pip3 install tox
-  ```
-  - Run unit tests
-   ```bash
-   tox
-   ```
- ## Influx Query for the Bar Gauge Grafana Widget 
+  - Optional: install a systemd service file to run on startup via `birdnet_app@.service`
+
+  ## Influx Query for the Bar Gauge Grafana Widget 
  ```influx
   from(bucket: "main")
   |> range(start: v.timeRangeStart, stop: v.timeRangeStop)

@@ -1,5 +1,5 @@
 [Unit]
-Description=birdNet main service
+Description=birdNet browser service
 After=network.target
 StartLimitIntervalSec=0
 
@@ -7,8 +7,9 @@ StartLimitIntervalSec=0
 Type=simple
 Restart=always
 RestartSec=30
-ExecStart=/usr/bin/python3 -u /home/pi/birdnetapp/main.py
-User=pi
+ExecStart=/usr/bin/python3 -m http.server 8000
+WorkingDirectory=/home/%i/birdNet
+User=%i
 
 [Install]
 WantedBy=multi-user.target

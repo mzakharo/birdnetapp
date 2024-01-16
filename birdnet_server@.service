@@ -7,8 +7,9 @@ StartLimitIntervalSec=0
 Type=simple
 Restart=always
 RestartSec=30
-ExecStart=/usr/bin/python3 -u /home/pi/birdnetapp/BirdNET-Analyzer/server.py
-WorkingDirectory=/home/pi/birdnetapp/BirdNET-Analyzer/
+ExecStart=/usr/bin/python3 -u /home/%i/birdnetapp/BirdNET-Analyzer/server.py
+WorkingDirectory=/home/%i/birdnetapp/BirdNET-Analyzer/
+User=%i
 
 [Install]
 WantedBy=multi-user.target
