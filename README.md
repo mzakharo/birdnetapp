@@ -61,6 +61,7 @@ RuntimeMaxUse=64M
 ## Installation (continued.)
 
  - Install requirements via `sudo apt install sox ffmpeg libasound2-dev`
+ - for Beaglebone: Use BirdNET-Analyzer @ `5b6d1c3`. As this is the last model that is fast enough for this platform
  - for BeagleBone: `sudo apt instal llvm-dev libatlas-base-dev libsndfile1`
  - for BeagleBone: `pip3 install numba==0.56.4`
  - for BeagleBone: `pip3 install beaglebone/tflite_runtime-2.16.0-cp39-cp39-linux_armv7l.whl`
