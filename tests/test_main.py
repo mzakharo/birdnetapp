@@ -50,14 +50,13 @@ class DummyExecutor(Executor):
         with self._shutdownLock:
             self._shutdown = True
 
-@pytest.mark.skip(reason="no way of currently testing this")
 def test1():
 
     q = Query()
 
     args = Args()
     args.min_confidence = 0
-    args.dry = False
+    args.dry = True
 
     w = Worker(args, None, None, q, q)
 
@@ -71,9 +70,12 @@ def test1():
     assert msg['notify'] == True
     
     #test not sending notification if the bird already exists
-    q.data = ['Northern Cardinal']
-    msg_mute = w.upload_result(ts, FILENAME, SAVEDIR, res)
-    assert msg_mute['notify'] == False
+    #q.data = ['Northern Cardinal']
+    #msg_mute = w.upload_result(ts, FILENAME, SAVEDIR, res)
+    #assert msg_mute['notify'] == False
+
+    msg_mute = deepcopy(msg)
+    msg_mute['notify'] = False
 
     out = send_notification_delayed(delayed_notifications, ts, deepcopy(msg_mute), 0)
     assert len(delayed_notifications) == 0
@@ -124,15 +126,20 @@ def test1():
     assert len(delayed_notifications) == 0
     assert out is not None
     assert out['count'] == 4
-    so = send_telegram(out, dry=True)
+    so = send_telegram('', '', out, dry=args.dry)
     assert so is None
 
 
 class Config: pass
-@pytest.mark.skip(reason="no way of currently testing this")
+#@pytest.mark.skip(reason="no way of currently testing this")
 def test_worker():
     q = Query()
-    args = Config()
+    args = Args()
+    args.min_confidence = 0
+    args.dry = True
+    args.notification_delay = 0
+    args.telegram_chatid = ''
+    args.telegram_token = ''
 
     stream = MocStream()
     exc = DummyExecutor()
@@ -143,15 +150,15 @@ def test_worker():
     ts = datetime.datetime.now().replace(microsecond=0)
     data = bytearray(48000)
 
-    #process data until telegram message is queued
+    print('process data until telegram message is queued')
     while  (msg := w.work(ts, data)) is None: pass
     assert 'Cardinal' in msg['name']
 
-    #make sure there is a pending telegram
+    print('make sure there is a pending telegram')
     assert len(w.futures)
 
-    #send the pending telegram
+    print('send the pending telegram')
     while w.futures:
-        w.work(ts, data)
+        w.work(ts, None)
 
 

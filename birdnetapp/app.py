@@ -51,11 +51,21 @@ class Config:
     microphone: str
     channels: int
     rate: int
+    debug: bool
+    dry: bool
+    min_confidence: float
+    notification_delay: int
 
     @classmethod
     def load(cls, path: str = os.path.join(dir_path, "..", "config.yaml")) -> "Config":
         with open(path, "r") as f:
             config_dict = yaml.safe_load(f)
+        
+        config_dict['dry'] = False
+        config_dict['debug'] = False
+        config_dict['min_confidence'] = CONF_THRESH
+        config_dict['notification_delay'] = NOTIFICATION_DELAY_SECONDS
+        
         return cls(**config_dict)
 
 
@@ -156,7 +166,7 @@ class Worker:
             return
         result, conf = results[0]
         sci_result, result = result.split('_')
-        if conf < CONF_THRESH:
+        if conf < self.args.min_confidence:
             return
 
         dir_path = os.path.join(savedir, result)
@@ -171,16 +181,18 @@ class Worker:
         meta['results'] = results 
 
         #send notification if it is a new bird
-        query = f'''
-                import "influxdata/influxdb/schema"
-                schema.fieldKeys(
-                    bucket: "{self.args.influx_bucket}",
-                    predicate: (r) => r["_measurement"] == "birdnet",
-                    start: -{SEEN_TIME},
-                )'''
-        df = self.query_api.query_data_frame(query)
-
-        seen = any(df['_value'].isin([result]))
+        if not self.args.dry:
+            query = f'''
+                    import "influxdata/influxdb/schema"
+                    schema.fieldKeys(
+                        bucket: "{self.args.influx_bucket}",
+                        predicate: (r) => r["_measurement"] == "birdnet",
+                        start: -{SEEN_TIME},
+                    )'''
+            df = self.query_api.query_data_frame(query)
+            seen = any(df['_value'].isin([result]))
+        else:
+            seen = False
 
         notify = not seen
 
@@ -206,7 +218,8 @@ class Worker:
         point = Point("birdnet") \
               .field(result, conf) \
               .time(ts_utc, WritePrecision.NS)
-        self.write_api.write(self.args.influx_bucket, self.args.influx_org, point)
+        if not self.args.dry:
+            self.write_api.write(self.args.influx_bucket, self.args.influx_org, point)
         return out
 
 
@@ -244,22 +257,23 @@ class Worker:
                 continue
             self.futures.remove(f)
             res = f.result()
-            msg = send_notification_delayed(self.delayed_notifications, ts, res, delay=NOTIFICATION_DELAY_SECONDS)
+            msg = send_notification_delayed(self.delayed_notifications, ts, res, delay=self.args.notification_delay)
             if msg is not None:
-                self.futures.append(self.exc.submit(send_telegram, self.args.telegram_token, self.args.telegram_chatid, msg, False))
+                self.futures.append(self.exc.submit(send_telegram, self.args.telegram_token, self.args.telegram_chatid, msg, self.args.dry))
             return msg
 
     def work(self, ts, data):
-        self.stride += 1
-        _LOGGER.debug(f"{self.stride} {len(data)}")
-        self.buf.append(data)
-        if len(self.futures) <= 1 and len(self.buf) == self.buf.maxlen:            
-            buf = b''.join(self.buf)
-            self.send_buffer(ts, buf)
-            self.stride = 0
-        else:
-            if self.stride >= self.buf.maxlen:
-                _LOGGER.warning('dropping buffer')
+        if data is not None:
+            self.stride += 1
+            _LOGGER.debug(f"{self.stride} {len(data)}")
+            self.buf.append(data)
+            if len(self.futures) <= 1 and len(self.buf) == self.buf.maxlen:            
+                buf = b''.join(self.buf)
+                self.send_buffer(ts, buf)
+                self.stride = 0
+            else:
+                if self.stride >= self.buf.maxlen:
+                    _LOGGER.warning('dropping buffer')
         return self.post_process(ts)
 
 

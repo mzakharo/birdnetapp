@@ -79,8 +79,7 @@ def main():
     MDATA['lon'] = args.longitude
     print('birdNet settings', MDATA)
 
-    debug = False
-    if debug:
+    if args.debug:
         logging.basicConfig(level=logging.DEBUG)
     else:
         logging.basicConfig(level=logging.INFO)
