@@ -22,7 +22,8 @@ from .config import *
 from .clean import cleanup
 from dataclasses import dataclass
 import yaml
-
+import os 
+dir_path = os.path.dirname(os.path.realpath(__file__))
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -52,7 +53,7 @@ class Config:
     rate: int
 
     @classmethod
-    def load(cls, path: str = os.path.abspath("config.yaml")) -> "Config":
+    def load(cls, path: str = os.path.join(dir_path, "..", "config.yaml")) -> "Config":
         with open(path, "r") as f:
             config_dict = yaml.safe_load(f)
         return cls(**config_dict)
