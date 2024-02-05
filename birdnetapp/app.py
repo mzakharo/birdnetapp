@@ -18,9 +18,11 @@ import warnings
 from influxdb_client import Point, WritePrecision
 from influxdb_client.client.warnings import MissingPivotFunction
 warnings.simplefilter("ignore", MissingPivotFunction)
-from .secrets import TELEGRAM_TOKEN, TELEGRAM_CHATID, INFLUX_BUCKET, INFLUX_ORG
 from .config import *
 from .clean import cleanup
+from dataclasses import dataclass
+import yaml
+
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -35,43 +37,47 @@ MDATA = {'lat': LAT,
          }
 
 
-def get_parser():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--min_confidence', type=float, default=CONF_THRESH, help='minimum confidence threshold')
-    parser.add_argument('--dry', action='store_true', help='do not upload to influx, send notifications')
-    parser.add_argument('--debug', action='store_true', help='enable debug logs')
-    parser.add_argument('--card', default=CARD, help='microphone card to look for')
-    parser.add_argument('--channels', default=CHANNELS, type=int, help='microphone number of channels')
-    parser.add_argument('--rate', default=RATE, type=int, help='microphone sampling rate (Hz)')
-    parser.add_argument('--stride_seconds', default=RECORD_SECONDS // 2, help='buffer stride (in seconds) -> increase for RPi-3', type=int)
-    parser.add_argument('--notification_delay', type=int, default=NOTIFICATION_DELAY_SECONDS, help='notificaiton delay')
-    parser.add_argument('--min_notification_count', type=int, default=MIN_NOTIFICATION_COUNT, help='minimum detection count threshold for sending telegram notification')
-    parser.add_argument('--latitude', type=float, default=LAT, help='latitude for zone based result filtering')
-    parser.add_argument('--longtitude', type=float, default=LON, help='longtitude for zone based result filtering')
-    return parser
+@dataclass
+class Config:   
+    influx_token: str
+    influx_url: str
+    influx_org: str
+    influx_bucket: str
+    telegram_token: str
+    telegram_chatid: str
+    latitude: float
+    longitude: float
+    microphone: str
+    channels: int
+    rate: int
+
+    @classmethod
+    def load(cls, path: str = os.path.abspath("config.yaml")) -> "Config":
+        with open(path, "r") as f:
+            config_dict = yaml.safe_load(f)
+        return cls(**config_dict)
 
 
-def send_telegram(msg, dry=False, min_notification_count=1):
+
+
+def send_telegram(token, chatid, msg, dry=False):
     filename = msg['fname']
     sci_result = msg['sci']
     result = msg['name']
     conf = msg['conf']
     count = msg['count']
-    if count < min_notification_count:
-        _LOGGER.info(f'skipping telegram message for {result}')
-        return
     _LOGGER.info(f'sending telegram message for {result}')
     with open(filename, 'rb') as audio:
         linkname = sci_result.replace(' ', '+')
         all_species_name = result.replace(' ', '_')
-        tb = telebot.TeleBot(TELEGRAM_TOKEN, parse_mode='MARKDOWN')
+        tb = telebot.TeleBot(token, parse_mode='MARKDOWN')
         title = f'Confidence: {int(conf * 100)}%'
         caption =  f'''{title}  
 Count: {count}  
 [All About Birds](https://allaboutbirds.org/guide/{all_species_name})  
 [Wikimedia](https://commons.wikimedia.org/w/index.php?search={linkname}&title=Special:MediaSearch&go=Go)'''
         if not dry:
-            tb.send_audio(TELEGRAM_CHATID, audio, performer=sci_result, title=result, caption=caption)
+            tb.send_audio(chatid, audio, performer=sci_result, title=result, caption=caption)
         else:
             _LOGGER.info(f'telegram {result} {sci_result} {caption}')
 
@@ -149,7 +155,7 @@ class Worker:
             return
         result, conf = results[0]
         sci_result, result = result.split('_')
-        if conf < self.args.min_confidence:
+        if conf < CONF_THRESH:
             return
 
         dir_path = os.path.join(savedir, result)
@@ -167,7 +173,7 @@ class Worker:
         query = f'''
                 import "influxdata/influxdb/schema"
                 schema.fieldKeys(
-                    bucket: "{INFLUX_BUCKET}",
+                    bucket: "{self.args.influx_bucket}",
                     predicate: (r) => r["_measurement"] == "birdnet",
                     start: -{SEEN_TIME},
                 )'''
@@ -199,7 +205,7 @@ class Worker:
         point = Point("birdnet") \
               .field(result, conf) \
               .time(ts_utc, WritePrecision.NS)
-        self.write_api.write(INFLUX_BUCKET, INFLUX_ORG, point)
+        self.write_api.write(self.args.influx_bucket, self.args.influx_org, point)
         return out
 
 
@@ -237,9 +243,9 @@ class Worker:
                 continue
             self.futures.remove(f)
             res = f.result()
-            msg = send_notification_delayed(self.delayed_notifications, ts, res, delay=self.args.notification_delay)
+            msg = send_notification_delayed(self.delayed_notifications, ts, res, delay=NOTIFICATION_DELAY_SECONDS)
             if msg is not None:
-                self.futures.append(self.exc.submit(send_telegram, msg, self.args.dry, self.args.min_notification_count))
+                self.futures.append(self.exc.submit(send_telegram, self.args.telegram_token, self.args.telegram_chatid, msg, False))
             return msg
 
     def work(self, ts, data):

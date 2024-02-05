@@ -11,4 +11,5 @@ scipy
 influxdb-client
 pyTelegramBotAPI
 pydub
+pyyaml
 

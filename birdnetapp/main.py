@@ -5,8 +5,7 @@ from influxdb_client import InfluxDBClient, Point, WritePrecision
 from influxdb_client.client.write_api import SYNCHRONOUS
 import datetime
 
-from .secrets import INFLUX_URL, INFLUX_TOKEN, INFLUX_ORG
-from .app import Worker, get_parser, MDATA
+from .app import Worker, Config, MDATA
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -53,7 +52,7 @@ class MicStream():
 
 
 def runner(args, stream):
-    influx_client = InfluxDBClient(url=INFLUX_URL, token=INFLUX_TOKEN, org=INFLUX_ORG)
+    influx_client = InfluxDBClient(url=args.influx_url, token=args.influx_token, org=args.influx_org)
     write_api = influx_client.write_api(write_options=SYNCHRONOUS)
     query_api = influx_client.query_api()
     with ThreadPoolExecutor(max_workers=1) as exc:
@@ -73,19 +72,20 @@ def runner(args, stream):
                 future.cancel()
 
 def main():
-    parser = get_parser()
-    args = parser.parse_args()
+    
+    args = Config.load()
     print('App CONFIG:', args)
     MDATA['lat'] = args.latitude
-    MDATA['lon'] = args.longtitude
+    MDATA['lon'] = args.longitude
     print('birdNet settings', MDATA)
 
-    if args.debug:
+    debug = False
+    if debug:
         logging.basicConfig(level=logging.DEBUG)
     else:
         logging.basicConfig(level=logging.INFO)
 
-    stream = MicStream(args.rate, args.channels, args.rate, args.card)
+    stream = MicStream(args.rate, args.channels, args.rate, args.microphone)
     stream.open()
     try:
         runner(args, stream)

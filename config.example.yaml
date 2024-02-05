@@ -1,0 +1,18 @@
+#InfluxDB access configuration
+influx_token: 'xxxx'
+influx_url: 'http://localhost:8086'
+influx_bucket: 'xxxx' 
+influx_org: 'xxxx'
+
+
+#Telegram
+telegram_token: 'xxxx'
+telegram_chatid: '-000000000000'
+
+
+#Environment
+latitude: -1
+longitude: -1
+microphone: 'Microphone'
+channels: 1
+rate: 48000

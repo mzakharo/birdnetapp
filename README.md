@@ -32,17 +32,9 @@ BirdNET App for Raspberry Pi/BeagleBone
  ```bash
  git clone --recurse-submodules https://github.com/mzakharo/birdnetapp.git
  ```
- - In  the `birdnetapp/birdnetapp` folder, create a `secrets.py` with the following contents: 
- ```python
-TELEGRAM_TOKEN = 'from_botfather'
-TELEGRAM_CHATID = '#######'
+ - Copy `config.example.yaml` to  `config.yaml`  and fill in the details according to your hardware and environment
 
-INFLUX_URL = "http://host:PORT"
-INFLUX_TOKEN= "XXXXXX"
-INFLUX_ORG = "my_org"
-INFLUX_BUCKET = "my_bucket"
- ```
- 
+
  ### Optional: reduce SD card wear
  - setup `/tmp` as ramdisk:
 ```bash
@@ -67,9 +59,7 @@ RuntimeMaxUse=64M
  - for BeagleBone: `pip3 install beaglebone/tflite_runtime-2.16.0-cp39-cp39-linux_armv7l.whl`
  - Install dependencies via `pip3 install -r requirements.txt`
  - Run the server:  `cd $HOME/birdnetapp/BirdNET-Analyzer && python3 server.py`
- - Run the app: `cd $HOME/birdnetapp && python3 main.py --lat  <latitude> --lon <longitude> --notification_delay 15`
- - Note: the app will probably complain that the mic is not configured properly and give options on possible configurations. adjust `--card --channels --rate` parameters according to your microphone capabilities
-
+ - Run the app: `cd $HOME/birdnetapp && python3 main.py`
 
  - Optional: install systemd services to run on startup via `birdnet_main.service` and `birdnet_server.service`
   ```

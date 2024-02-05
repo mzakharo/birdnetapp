@@ -1,4 +1,4 @@
-from birdnetapp.app import send_telegram
+from birdnetapp.app import send_telegram, Config
 from pydub import AudioSegment
 
 def test1(dry=True):
@@ -11,8 +11,8 @@ def test1(dry=True):
     sci_result, result = result.split('_')
     count = 1
     msg = {'fname' : export_filename,'sci' :  sci_result, 'name' : result, 'conf' : conf, 'count' : count }
-    send_telegram(msg, dry=dry)
-    send_telegram(msg, dry=dry, min_notification_count=2)
+    send_telegram('', '', msg, dry=dry)
+    send_telegram('', '', msg, dry=dry)
 
 if __name__ == '__main__':
     test1(dry=False)
